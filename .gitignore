@@ -1,0 +1,7 @@
+./_pycache/*.pyc
+./test/*.pyc
+./apkscanner/core/_pycache/*.pyc
+./apkscanner/parser/_pycache/*.pyc
+./apkscanner/utils/_pycache/*.pyc
+./apkscanner/type/_pycache/*.pyc
+
