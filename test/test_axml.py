@@ -9,14 +9,18 @@
 
 # Here put the import lib
 
+import os
 import unittest
 from apkscanner.core.axml_parser import AndroidManifestXmlParser
+
+root =os.path.abspath(os.path.dirname(__file__))
+sample = root[:root.rfind(os.sep)]
 
 class AxmlTesst(unittest.TestCase):
 
     def test_axml(self):
 
-        for xml in ["F:\\CodeDocuments\pythonCode\\appsamples\\normal\\AndroidManifest.xml"]:
+        for xml in [sample+os.sep+"samples"+os.sep+"AndroidManifest.xml"]:
             axml = AndroidManifestXmlParser(xml)
             # print(axml)
 

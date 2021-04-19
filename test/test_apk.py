@@ -12,13 +12,17 @@
 # Here put the import lib
 
 import unittest
+import os
 
 from apkscanner.core.apk_parser import ApkPaser
+from apkscanner.dex.dex_header import DexHeader
 
+root =os.path.abspath(os.path.dirname(__file__))
+sample = root[:root.rfind(os.sep)]
 class ApkTester(unittest.TestCase):
 
     def test_apk(self):
-        for f in ["F:\\CodeDocuments\pythonCode\\appsamples\\normal\\apk_avl_pro_unsign_sign_signed.apk"]:
+        for f in [sample+os.sep+"samples"+os.sep+"app-release.apk"]:
             apk = ApkPaser(f)
 
 

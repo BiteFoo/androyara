@@ -8,17 +8,22 @@
 '''
 
 import unittest
+import os
+
 
 from apkscanner.dex.dex_header import DexHeader
 
+root =os.path.abspath(os.path.dirname(__file__))
+sample = root[:root.rfind(os.sep)]
+print("--> root ",root,sample)
 
-class DexTes(unittest.TestCase):
+class DexTest(unittest.TestCase):
 
     def test_dex(self):
         # hidex
-        for dex in ["D:\\app_virus\\app\\release\\classes.dex"]:
+        for dex in [sample+os.sep+"samples"+os.sep+"classes.dex"]:
             pass
             with open(dex, 'rb') as fp:
                 dex_header = DexHeader(fp.read())
-                pkg = "com.loopher.virus"
+                pkg =  "com.tencent.qqpimsecure"#"com.loopher.virus" classes_1.dex
                 dex_header.read_all(pkg)
