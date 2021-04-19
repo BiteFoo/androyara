@@ -3,7 +3,7 @@
 """
 Reference from Androguard
 """
-from struct import unpack
+from struct import unpack,pack
 import logging
 from xml.sax.saxutils import escape
 import collections
@@ -1344,7 +1344,7 @@ class ARSCParser:
         """
         :param bytes raw_buff: the raw bytes of the file
         """
-        self.buff = bytecode.BuffHandle(raw_buff)
+        self.buff = BuffHandle(raw_buff)
 
         if self.buff.size() < 8 or self.buff.size() > 0xFFFFFFFF:
             raise ResParserError("Invalid file size {} for a resources.arsc file!".format(self.buff.size()))
