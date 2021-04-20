@@ -21,6 +21,8 @@ NS_ANDROID = '{{{}}}'.format(NS_ANDROID_URI)  # Namespace as used by etree
 class AxmlExcetion(BaseException):
     pass
 
+class ElementNotFound(BaseException):
+    pass
 
 class AndroidManifestXmlParser(BaserParser):
     parser_info={
@@ -29,12 +31,13 @@ class AndroidManifestXmlParser(BaserParser):
 
     }
     def __init__(self,manifest,buff=None):
-        if manifest is not None and os.path.isfile(manifest):
-            self.buff = open(manifest,'rb').read()
-        elif buff is not None:
-            self.buff = buff
-        else:
-            raise AxmlExcetion("Need AndroidManifest.xml or buff data")
+        super(AndroidManifestXmlParser,self).__init__(manifest,buff)
+        # if manifest is not None and os.path.isfile(manifest):
+        #     self.buff = open(manifest,'rb').read()
+        # elif buff is not None:
+        #     self.buff = buff
+        # else:
+        #     raise AxmlExcetion("Need AndroidManifest.xml or buff data")
         xml_file  =  AXMLPrinter(self.buff) # 在这里解析出所有的xml信息
         self.axml ={}
         if not xml_file.is_valid():
@@ -151,6 +154,7 @@ class AndroidManifestXmlParser(BaserParser):
     
     def get_main_activity(self):
 
+        log.warning("---> Get MainActivity maybe error ,due to pop first one activity from the list")
         activities =self.get_all_activities()
         if len(activities)>0:
             return self._format_value(activities.pop())
@@ -158,7 +162,14 @@ class AndroidManifestXmlParser(BaserParser):
 
     def get_package_name(self):
         return self.package
-    
+
+    def get_application(self):
+
+        try:
+            return self.get_attribute_value("application","name")
+        except ElementNotFound:
+            return ""
+
     def get_providers(self):
 
         return list(self.get_all_attribute_value("provider","name"))

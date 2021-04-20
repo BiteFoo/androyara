@@ -9,6 +9,11 @@
 
 # Here put the import lib
 
+import os
+import hashlib
+
+class ReadApkError(BaseException):
+    pass
 class BaserParser(object):
 
     parser_info={
@@ -16,4 +21,22 @@ class BaserParser(object):
         "desc":"FooParser"
 
     }
+
+    def __init__(self,filename,buff):
+
+        if filename is not None and os.path.isfile(filename):
+            self.filename = filename
+            with open(filename,'rb') as out:
+                self.buff =out.read()
+        elif buff is not None:
+            self.filename =hashlib.sha256(buff).hexdigest()
+            self.buff = buff
+        else:
+            raise  ReadApkError("filename or buff must not be None")
+
+
+
+
+
+
 

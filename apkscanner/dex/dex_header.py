@@ -72,8 +72,7 @@ class DexHeader(object):
         self.buff = fp
         self.__raw = buff
 
-
-    def read_all(self,pkg):
+    def read_all(self, pkg):
         self.pkg = pkg
 
         self.read_string_idx_datas()
@@ -84,7 +83,6 @@ class DexHeader(object):
         self.read_class_defs_datas()
         # for offset,s in  self.string_table_map.items():
         #     print("%s  %s"%(hex(offset),s))
-
 
     def read(self, buff, fmt):
         return unpack(fmt, buff.read(4))
@@ -107,8 +105,8 @@ class DexHeader(object):
             self.string_item_offset_list.append(string_item_offset)
             index += 1
 
-        print("Info: read all string item done, string_idx_size: %d,read total: %d ," % (
-            self.string_idx_size, len(self.string_item_offset_list)))
+        # print("Info: , string_idx_size: %d,read total: %d ," % (
+        #     self.string_idx_size, len(self.string_item_offset_list)))
 
         # Right here read all string
         self.string_table_map = {
@@ -245,13 +243,13 @@ class DexHeader(object):
 
             clzz_name = self.get_class_name_by_idx(class_idx)
             index += 1
-            # Find target classes info 
+            # Find target classes info
             target_pkg = self.pkg
             if not self.is_target_clazz(target_pkg, clzz_name):
                 continue
             # target class
             if clazz_data_off <= 0:
-                print("error class_data_off error ",file=sys.stderr)
+                # print("error class_data_off error ",file=sys.stderr)
                 continue
 
             self.buff.seek(clazz_data_off, io.SEEK_SET)
@@ -275,19 +273,19 @@ class DexHeader(object):
 
                 static_field_cnt += static_field_idx_
                 static_field_size -= 1
-            
+
             instance_field_idx_cnt = 0
             # print("--" * 10 + "InstanceField" + "--" * 10)
             while instance_field_size > 0:
                 instance_idx = self.read_uleb128(self.buff)
-                instance_field_idx_cnt=  instance_field_idx_cnt + instance_idx
+                instance_field_idx_cnt = instance_field_idx_cnt + instance_idx
                 access_flags = self.read_uleb128(self.buff)
                 # print("Instance field: %s  access_flags: %s"%(self.field_idx_list[instance_field_idx_cnt],hex(access_flags)))
-                instance_field_size -=1
+                instance_field_size -= 1
 
             direct_method_idx = 0
-            print("--" * 10 + "DirectMethod" + "--" * 10)
-            while direct_method_size >0:
+            # print("--" * 10 + "DirectMethod" + "--" * 10)
+            while direct_method_size > 0:
                 direct_method_ = self.read_uleb128(self.buff)
                 direct_method_idx += direct_method_
                 method_name = self.get_method_name_by_idx(direct_method_idx)
@@ -295,61 +293,60 @@ class DexHeader(object):
                 code_off = self.read_uleb128(self.buff)
                 code_inss = self.read_code_item(code_off)
 
-                direct_method_size -=1
+                direct_method_size -= 1
 
-
-                print("direct  Method : %s  method_name: %s access_flag: %s code_off: %s code_ins len: %s" %
-                      (self.method_idx_list[direct_method_idx], method_name, hex(access_flags), hex(code_off),
-                       len(code_inss)))
-                for i,ins in enumerate(code_inss):
-                    print("code[%d]: %s"%(i,hex(ins)))
-
-            print("--"*10+"VirtualMethod"+"--"*10)
+            #     print("direct  Method : %s  method_name: %s access_flag: %s code_off: %s code_ins len: %s" %
+            #           (self.method_idx_list[direct_method_idx], method_name, hex(access_flags), hex(code_off),
+            #            len(code_inss)))
+            #     for i,ins in enumerate(code_inss):
+            #         print("code[%d]: %s"%(i,hex(ins)))
+            #
+            # print("--"*10+"VirtualMethod"+"--"*10)
 
             virtual_method_idx = 0
-            while virtual_method_size >0:
+            while virtual_method_size > 0:
                 virtual_method_ = self.read_uleb128(self.buff)
                 virtual_method_idx += virtual_method_
-                method_name  = self.get_method_name_by_idx(virtual_method_idx)
-                access_flags  = self.read_uleb128(self.buff)
+                method_name = self.get_method_name_by_idx(virtual_method_idx)
+                access_flags = self.read_uleb128(self.buff)
                 code_off = self.read_uleb128(self.buff)
                 code_inss = self.read_code_item(code_off)
-                virtual_method_size -=1
+                virtual_method_size -= 1
 
-                print("virtual Method : %s  method_name: %s access_flag: %s code_off: %s code_ins len: %s" %
-                      (self.method_idx_list[direct_method_idx],method_name,hex(access_flags),hex(code_off),len(code_inss)))
-                for i, ins in enumerate(code_inss):
-                    print("code[%d]: %s" % (i, hex(ins)))
+                # print("virtual Method : %s  method_name: %s access_flag: %s code_off: %s code_ins len: %s" %
+                #       (self.method_idx_list[direct_method_idx],method_name,hex(access_flags),hex(code_off),len(code_inss)))
+                # for i, ins in enumerate(code_inss):
+                #     print("code[%d]: %s" % (i, hex(ins)))
 
-    def read_code_item(self,code_off):
+    def read_code_item(self, code_off):
 
-        if code_off ==0x0:
+        if code_off == 0x0:
             return []
 
         _buff = io.BytesIO(self.__raw)
-        _buff.seek(code_off,io.SEEK_SET)
+        _buff.seek(code_off, io.SEEK_SET)
 
-        method_register_size ,= unpack("H",_buff.read(2))
-        method_ins_size, = unpack("H",_buff.read(2))
-        method_outs_size , = unpack("H",_buff.read(2))
-        method_tries_size , = unpack("H",_buff.read(2))
-        method_debug_info_off , = unpack("I",_buff.read(4))
+        method_register_size, = unpack("H", _buff.read(2))
+        method_ins_size, = unpack("H", _buff.read(2))
+        method_outs_size, = unpack("H", _buff.read(2))
+        method_tries_size, = unpack("H", _buff.read(2))
+        method_debug_info_off, = unpack("I", _buff.read(4))
 
-        method_instructions_size , = unpack("I",_buff.read(4))
-        code_instructions = [code_off,method_instructions_size] # record codeitem's offset and size 
+        method_instructions_size, = unpack("I", _buff.read(4))
+        # record codeitem's offset and size
+        code_instructions = [code_off, method_instructions_size]
 
         # print("--> code_off :%s method_instructions_size:%s"%(hex(code_off),hex(method_instructions_size)))
-        while method_instructions_size>0:
-            ins_code ,= unpack("H",_buff.read(2))
+        while method_instructions_size > 0:
+            ins_code, = unpack("H", _buff.read(2))
             code_instructions.append(ins_code)
-            method_instructions_size -=1
+            method_instructions_size -= 1
 
         return code_instructions
 
+    def is_target_clazz(self, pkg, clazz):
 
-    def is_target_clazz(self,pkg,clazz):
-
-        #return True if pkg in clazz else False
+        # return True if pkg in clazz else False
         need_filter_classes = [
             '.R$attr',
             '.R$drawable',
@@ -360,23 +357,23 @@ class DexHeader(object):
             '.BuildConfig'
         ]
 
-        if isinstance(clazz,bytes):
-            clazz = str(clazz,encoding="utf-8")
-        if pkg  == '' or clazz =='':
+        if isinstance(clazz, bytes):
+            clazz = str(clazz, encoding="utf-8")
+        if pkg == '' or clazz == '':
             return False
-        clazz = clazz.replace("L","").replace("/",'.').replace(";","")
+        clazz = clazz.replace("L", "").replace("/", '.').replace(";", "")
 
         # filter thridpart class ,like google's code etc
         suffix = clazz[clazz.rfind('.'):]
         if suffix in need_filter_classes:
             return False
-        # 
+        #
         target = re.compile(pkg)
         if target.match(clazz):
             return True
         return False
 
-    def get_method_name_by_idx(self,idx):
+    def get_method_name_by_idx(self, idx):
 
         dex_method_idx = self.method_idx_list[idx]
 
@@ -389,48 +386,46 @@ class DexHeader(object):
         clazz_name = self.get_class_name_by_idx(short_class_idx)
         method_proto_name = self.get_method_proto_name_by_idx(proto_idx)
 
-        print("--> class_name: %s , method_proto_name:%s method_name:%s"%(clazz_name,method_proto_name,method_name))
+        # print("--> class_name: %s , method_proto_name:%s method_name:%s"%(clazz_name,method_proto_name,method_name))
         return method_name
 
-    def get_class_name_by_idx(self,idx):
+    def get_class_name_by_idx(self, idx):
         """
         Return bytes like strings
         """
         off = self.string_item_offset_list[self.type_item_offset_list[idx]]
         return self.string_table_map[off]
 
-    def get_method_proto_name_by_idx(self,idx):
+    def get_method_proto_name_by_idx(self, idx):
 
         dexmethod_proto = self.dex_method_obj_index[idx]
         method_proto_name = self.get_string_by_idx(dexmethod_proto.shorty_idx)
-        rtvalue = self.get_string_by_idx(self.type_item_offset_list[dexmethod_proto.rturn_type_idx])
+        rtvalue = self.get_string_by_idx(
+            self.type_item_offset_list[dexmethod_proto.rturn_type_idx])
 
-        print("rtvalue: %s"%(rtvalue))
+        # print("rtvalue: %s"%(rtvalue))
         return method_proto_name
 
-
-    def get_string_by_idx(self,idx):
+    def get_string_by_idx(self, idx):
         off = self.string_item_offset_list[idx]
         return self.string_table_map[off]
 
-
     def read_uleb128(self, buff, offset=0):
-
         '''
         ULEB128
         '''
-        result ,= unpack('B',buff.read(1))
+        result, = unpack('B', buff.read(1))
         if result > 0x7f:
-            cur ,=unpack('B',buff.read(1))
+            cur, = unpack('B', buff.read(1))
             result = (result & 0x7f) | ((cur & 0x7f) << 7)
             if cur > 0x7f:
-                cur ,= unpack('B',buff.read(1))
+                cur, = unpack('B', buff.read(1))
                 result |= (cur & 0x7f) << 14
                 if cur > 0x7f:
-                    cur ,= unpack('B',buff.read(1))
+                    cur, = unpack('B', buff.read(1))
                     result |= (cur & 0x7f) << 21
                     if cur > 0x7f:
-                        cur ,= unpack('B',buff.read(1))
+                        cur, = unpack('B', buff.read(1))
                         if cur > 0x0f:
                             print(" warning possible error while decoding number")
                         result |= cur << 28

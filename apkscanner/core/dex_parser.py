@@ -11,9 +11,6 @@
 """
 
 
-
-
-import io
 from apkscanner.parser.base_parser import BaserParser
 from apkscanner.utils.buffer import BuffHandle
 class DexParser(BaserParser):
