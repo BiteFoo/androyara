@@ -15,7 +15,7 @@ from apkscanner.dex.dex_header import DexHeader
 
 root =os.path.abspath(os.path.dirname(__file__))
 sample = root[:root.rfind(os.sep)]
-print("--> root ",root,sample)
+# print("--> root ",root,sample)
 
 class DexTest(unittest.TestCase):
 
@@ -23,7 +23,7 @@ class DexTest(unittest.TestCase):
         # hidex
         for dex in [sample+os.sep+"samples"+os.sep+"classes.dex"]:
             pass
-            with open(dex, 'rb') as fp:
-                dex_header = DexHeader(fp.read())
-                pkg =  "com.tencent.qqpimsecure"#"com.loopher.virus" classes_1.dex
-                dex_header.read_all(pkg)
+            # with open(dex, 'rb') as fp:
+            #     dex_header = DexHeader(fp.read())
+            #     pkg =  "com.tencent.qqpimsecure"#"com.loopher.virus" classes_1.dex
+            #     dex_header.read_all(pkg)

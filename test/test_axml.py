@@ -22,5 +22,5 @@ class AxmlTesst(unittest.TestCase):
 
         for xml in [sample+os.sep+"samples"+os.sep+"AndroidManifest.xml"]:
             axml = AndroidManifestXmlParser(xml)
-            # print(axml)
+            print(axml)
 
