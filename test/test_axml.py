@@ -13,8 +13,9 @@ import os
 import unittest
 from apkscanner.core.axml_parser import AndroidManifestXmlParser
 
-root =os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.dirname(__file__))
 sample = root[:root.rfind(os.sep)]
+
 
 class AxmlTesst(unittest.TestCase):
 
@@ -22,5 +23,9 @@ class AxmlTesst(unittest.TestCase):
 
         for xml in [sample+os.sep+"samples"+os.sep+"AndroidManifest.xml"]:
             axml = AndroidManifestXmlParser(xml)
-            print(axml)
+            # print(axml)
+            # print(axml.get_all_export_components())
 
+            print(axml.get_main_activity())
+            # axml.get_main_activity()
+            pass

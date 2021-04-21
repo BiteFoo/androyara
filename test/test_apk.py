@@ -17,9 +17,12 @@ import json
 
 from apkscanner.core.apk_parser import ApkPaser
 from apkscanner.dex.dex_header import DexHeader
+from apkscanner.dex.dex_vm import  DexFileVM
 
-root =os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.dirname(__file__))
 sample = root[:root.rfind(os.sep)]
+
+
 class ApkTester(unittest.TestCase):
 
     def test_apk(self):
@@ -30,9 +33,12 @@ class ApkTester(unittest.TestCase):
         for f in [sample+os.sep+"samples"+os.sep+"aaa.apk"]:
             apk = ApkPaser(f)
             print("--"*10+"apk info "+"--"*10)
-            print(json.dumps(apk.apk_base_info(),indent=2))
-            dex = DexHeader(apk.get_classe_dex())
-            dex.read_all(apk.package)
+            # print(json.dumps(apk.apk_base_info(), indent=2))
+
+            # print(apk.apk_base_info())
+            vm  = DexFileVM(apk.package,apk.get_classe_dex())
+            vm.build_map()
 
 
-
+            # dex = DexHeader(apk.get_classe_dex())
+            # dex.read_all(apk.package)

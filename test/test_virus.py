@@ -18,17 +18,17 @@ class ViruApkTest(unittest.TestCase):
 
     def test_virus_scan(self):
 
-        for root, _, fs in os.walk(path):
-            for f in fs:
-                if f.endswith('.APK') or f.endswith('.apk'):
-                    apk_file = os.path.join(root, f)
-                    try:
-                        apk_parser = ApkPaser(apk_file)
-                        print(json.dumps(apk_parser.apk_base_info(), indent=2))
-                    except Exception as e:
-                        print("error {} file: {}".format(
-                            e, apk_file), file=sys.stderr)
-                        # raise e
+        # for root, _, fs in os.walk(path):
+        #     for f in fs:
+        #         if f.endswith('.APK') or f.endswith('.apk'):
+        #             apk_file = os.path.join(root, f)
+        #             try:
+        #                 apk_parser = ApkPaser(apk_file)
+        #                 print(json.dumps(apk_parser.apk_base_info(), indent=2))
+        #             except Exception as e:
+        #                 print("error {} file: {}".format(
+        #                     e, apk_file), file=sys.stderr)
+        # raise e
         pass
 
     def test_virus_file(self):
