@@ -11,17 +11,17 @@
 """
 
 
-from apkscanner.parser.base_parser import BaserParser
-from apkscanner.utils.buffer import BuffHandle
-class DexParser(BaserParser):
+from apkscanner.dex.dex_vm import DexFileVM
+class DexParser(object):
 
     parser_info = {
         "name": "DexParser",
         "desc": "Parsing Dex file into bytecode"
     }
 
-    def __init__(self, dex, buff=None):
+    def __init__(self, pkg, buff):
 
-        super(DexParser, self).__init__(dex, buff)
 
-        self.fp = BuffHandle(self.buff)
+        self.vm = DexFileVM(pkg,buff)
+
+        self.vm.build_map()
