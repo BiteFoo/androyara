@@ -220,7 +220,11 @@ class AndroidManifestXmlParser(BaserParser):
         activities = y.intersection(x)
 
         if len(activities) > 0:
-            return self._format_value(activities.pop())
+            main_activity = self._format_value(activities.pop())
+            if main_activity.startswith("."):
+                # maybe need add package to .MainActivity
+                main_activity = self.package + main_activity
+            return main_activity
         return "Not Found MainActivity"
 
     def get_package_name(self):

@@ -25,6 +25,7 @@ import binascii
 import asn1crypto
 from asn1crypto import cms, x509, keys
 from apkscanner.parser.base_parser import BaserParser
+from apkscanner.dex.dex_vm import DexFileVM
 from apkscanner.core.axml_parser import AndroidManifestXmlParser, ARSCParser, ARSCResTableConfig
 
 log = logging.getLogger("apkscanner.apk")
@@ -297,13 +298,16 @@ class ApkPaser(BaserParser):
 
         axml_buff = self.get_buff(default_meta_info['AndroidManifest_xml'])
         self.axml = AndroidManifestXmlParser(None, buff=axml_buff)
+
+        self.dex_vm = DexFileVM(self.axml.package, self.get_classe_dex())
         # Read APK's fingerprint
         self._app_md5 = hashlib.md5(self.buff).hexdigest()
         self._app_sha256 = hashlib.sha256(self.buff).hexdigest()
+        self._app_sha1 = hashlib.sha1(self.buff).hexdigest()
         self._app_crc32 = crc32(self.buff)
 
         # len(self.buff)  # len(self.buff) / 1024
-        self.filesize = int(len(self.buff) / 1024)
+        self.filesize = len(self.buff)  # int(len(self.buff) / 1024) # kb
         #  eb5d886abb2f01efa0de268de38a1ee7 app_sha256:c924023051836aecffb9c302de440477e6a529573f1586a3312c42a17c818015 app_crc32:1318333930
         # print("--> app_md5: {} app_sha256:{} app_crc32:{} ".format(self._app_md5,self._app_sha256,self._app_crc32))
         # Read signature info
@@ -317,9 +321,13 @@ class ApkPaser(BaserParser):
         # Read
         # print("--> AndoridManifest.xml info ",self.axml)
 
+    def apk_strings(self):
+
+        return self.dex_vm.all_strings()
+
     def apk_base_info(self):
         apk_info = {
-            "appName":self.get_app_name(),
+            "appName": self.get_app_name(),
             "signed": {
                 "v1": self.is_signed_v1(),
                 "v2": self.is_signed_v2(),
@@ -332,6 +340,7 @@ class ApkPaser(BaserParser):
             "Application": self.axml.get_application(),
             "sha256": self._app_sha256,
             "md5": self._app_md5,
+            "sha1": self._app_sha1,
             "crc32": hex(self._app_crc32),
             "file": self.filename,
             "filetype": self.get_type(),
@@ -481,18 +490,16 @@ class ApkPaser(BaserParser):
             return app_name
         if app_name_id.startswith("@"):
             try:
-                app_name_res_id = int(app_name_id[1:],16)
+                app_name_res_id = int(app_name_id[1:], 16)
 
-                app_name = self.asrc.get_resolved_res_configs(app_name_res_id,ARSCResTableConfig.default_config())[0][1]
+                app_name = self.asrc.get_resolved_res_configs(
+                    app_name_res_id, ARSCResTableConfig.default_config())[0][1]
                 # print("-->> ",type(app_name))
                 # if isinstance(app_name,str):
                 #     app_name = codecs.decode()
             except:
                 return ""
         return app_name
-
-
-
 
     def get_signatures(self):
         # Read all signature file data -> bytes buffer
