@@ -11,6 +11,7 @@ import os
 import json
 import sys
 from apkscanner.core.apk_parser import ApkPaser
+from apkscanner.dex.dex_vm import DexFileVM
 path = "/tmp/apkscanner/allvirusSample"
 
 
@@ -25,10 +26,14 @@ class ViruApkTest(unittest.TestCase):
         #             try:
         #                 apk_parser = ApkPaser(apk_file)
         #                 print(json.dumps(apk_parser.apk_base_info(), indent=2))
+        #                 vm = DexFileVM(apk_parser.package,
+        #                                apk_parser.get_classe_dex())
+        #                 vm.build_map()
+        #                 # break
+
         #             except Exception as e:
         #                 print("error {} file: {}".format(
         #                     e, apk_file), file=sys.stderr)
-        # raise e
         pass
 
     def test_virus_file(self):
