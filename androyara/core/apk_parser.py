@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 '''
 @File    :   apk_parser.py
-@Author  :   Loopher 
+@Author  :   Loopher
 @Version :   1.0
 @License :   (C)Copyright 2020-2021, Loopher
 @Desc    :   APk Information
@@ -293,8 +293,10 @@ class ApkPaser(BaserParser):
         self._v3_siging_data = None
         self._v2_signing_data = None
         # read AndroidManifestxml info
-        arsc_buff = self.get_buff(default_meta_info['arsc'])
-        self.asrc = ARSCParser(arsc_buff)
+
+        # arsc_buff = self.get_buff(default_meta_info['arsc'])
+        self.asrc = None  # ARSCParser(arsc_buff)
+
 
         axml_buff = self.get_buff(default_meta_info['AndroidManifest_xml'])
         self.axml = AndroidManifestXmlParser(None, buff=axml_buff)
@@ -321,9 +323,18 @@ class ApkPaser(BaserParser):
         # Read
         # print("--> AndoridManifest.xml info ",self.axml)
 
-    def apk_strings(self):
+    def ok(self):
+        return self.dex_vm.ok()
 
-        return self.dex_vm.all_strings()
+    def all_strings(self, pattern):
+
+        return self.dex_vm.all_strings(pattern)
+
+    def all_class_defs(self):
+        return self.dex_vm.all_class_defs()
+
+    def print_ins(self,offset):
+        self.dex_vm.print_ins(offset)
 
     def apk_base_info(self):
         apk_info = {
@@ -481,6 +492,16 @@ class ApkPaser(BaserParser):
 
         return signature_names
 
+    def get_asrc(self):
+        try:
+            if self.asrc is not None:
+                return True
+            arsc_buff = self.get_buff("resources.arsc")
+            self.asrc = ARSCParser(arsc_buff)
+            return True
+        except:
+            return False
+
     def get_app_name(self):
         if "resources.arsc" not in self.get_file_names():
             return ""
@@ -490,6 +511,9 @@ class ApkPaser(BaserParser):
             return app_name
         if app_name_id.startswith("@"):
             try:
+                if not self.get_asrc():
+                    return ""
+
                 app_name_res_id = int(app_name_id[1:], 16)
 
                 app_name = self.asrc.get_resolved_res_configs(

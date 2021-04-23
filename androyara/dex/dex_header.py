@@ -260,6 +260,7 @@ class DexHeader(object):
             if not self.is_target_clazz(target_pkg, clzz_name):
                 continue
             # target class
+            print("--> read classDefs %s" % ())
             if clazz_data_off <= 0:
                 # print("error class_data_off error ",file=sys.stderr)
                 continue
@@ -355,7 +356,7 @@ class DexHeader(object):
 
             self.class_defs.append(class_def)
 
-    def read_code_item(self, code_off):
+    def read_code_instrs(self, code_off):
 
         if code_off == 0x0:
             return []
@@ -393,14 +394,25 @@ class DexHeader(object):
             '.R',
             '.BuildConfig'
         ]
-        if pkg is None or pkg == '':
-            # default all
-            return True
+        android_s = [
+            "^(Landroid/support|Landroid/arch|Landroidx/versionedparcelable|Landroidx/core|Lkotlin/|Lkotlinx/).+",
+            ".*(R\$.+)$",
+            ".+(/BuildConfig;|/R;)$",
+
+        ]
 
         if isinstance(clazz, bytes):
             clazz = str(clazz, encoding="utf-8")
-        if pkg == '' or clazz == '':
+        if clazz == '':
             return False
+
+        for a in android_s:
+            expr = re.compile(a)
+            if expr.search(clazz):
+                return False
+
+        if pkg is None or pkg == '':
+            return True
         clazz = clazz.replace("L", "").replace("/", '.').replace(";", "")
 
         # filter thridpart class ,like google's code etc

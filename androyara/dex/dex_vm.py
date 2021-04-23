@@ -31,6 +31,14 @@ class DexFileVM(BuffHandle):
     def ok(self):
         return self._ok
 
+    def all_class_defs(self):
+        #
+        # for class_def in self.dex_header.class_defs:
+
+        #     print("--> ", class_def)
+        #     print("")
+        return self.dex_header.class_defs
+
     def build_map(self):
         """
         Build a search map for every class
@@ -51,18 +59,23 @@ class DexFileVM(BuffHandle):
                 # check content:// or http(s)://
                 print(k, v)
 
-    def all_strings(self, pattern: str):
+    def print_ins(self, offset):
+        for i, ins in enumerate(self.dex_header.read_code_item(offset)):
+            print(i, "%s" % (hex(ins)))
+
+    def all_strings(self, pattern_list: list):
         """
         return all dex strings
         """
         strings = []
         reobjs_exprs = []
-        if "," in pattern:
-            for p in pattern.split(','):
-                expr = re.compile(p, re.IGNORECASE)
-                reobjs_exprs.append(expr)
-        elif pattern is not None and pattern != '':
-            reobjs_exprs.append(re.compile(pattern))
+        for pattern in pattern_list:
+            if "," in pattern:
+                for p in pattern.split(','):
+                    expr = re.compile(p, re.IGNORECASE)
+                    reobjs_exprs.append(expr)
+            elif pattern is not None and pattern != '':
+                reobjs_exprs.append(re.compile(pattern))
 
         for _, v in self.dex_header.string_table_map.items():
             try:
@@ -71,7 +84,8 @@ class DexFileVM(BuffHandle):
             except UnicodeDecodeError:
                 continue
 
-            if pattern is None:
+            if len(reobjs_exprs) == 0:
+                # all string
                 strings.append(v)
                 continue
 
