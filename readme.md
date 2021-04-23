@@ -51,7 +51,7 @@
 
 字符串的检测可能并不是很理想，因为有些字符串并非可见字符或者不能正常解码，这种是一个不完美的情况，需要能够接受。
 ```sh
-python3 apkscanner.py -e true -f /path/to/test.apk
+python3 androyara.py -e true -f /path/to/test.apk
 ```
 
 
