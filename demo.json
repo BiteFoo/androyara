@@ -1,0 +1,12 @@
+{
+    "author": "Loopher",
+    "description": "This is rule for testing",
+    "rules": [
+        {
+            "name": "Trojan/Android.Kmin",
+            "string": "^(MIDlet-).+",
+            "string1": "http://su.5k3g.com/portal/m/c5/0.ashx?",
+            "file_type": "apk"
+        }
+    ]
+}
