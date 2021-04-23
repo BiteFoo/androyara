@@ -6,7 +6,7 @@
 @License :   (C)Copyright 2020-2021,Loopher
 @Desc    :   query threatbook report .
 '''
-from apkscanner.vsbox.vsbox import VSandbox
+from androyara.vsbox.vsbox import VSandbox
 
 
 class ThreatbookSandbox(VSandbox):
@@ -26,6 +26,7 @@ class ThreatbookSandbox(VSandbox):
         """
         Return analysis result
         """
+
         result = self.get_result()
         if result is None:
             return

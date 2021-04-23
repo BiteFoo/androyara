@@ -10,9 +10,9 @@ import unittest
 import os
 import json
 import sys
-from apkscanner.core.apk_parser import ApkPaser
-from apkscanner.dex.dex_vm import DexFileVM
-path = "/tmp/apkscanner/allvirusSample"
+from androyara.core.apk_parser import ApkPaser
+from androyara.dex.dex_vm import DexFileVM
+path = "/tmp/androyara/allvirusSample"
 
 
 class ViruApkTest(unittest.TestCase):
@@ -37,8 +37,8 @@ class ViruApkTest(unittest.TestCase):
         pass
 
     def test_virus_file(self):
-        # "/tmp/apkscanner/allvirusSample/MalwareSamples/TROJAN/5A51DC7F8ABB013758B8D2C9B9A29967D82C80A7C5CEC67E45E46C28A55AA84D.APK"
-        apk_file = "/tmp/apkscanner/allvirusSample/virussample/virussamplevirus5.apk"
+        # "/tmp/androyara/allvirusSample/MalwareSamples/TROJAN/5A51DC7F8ABB013758B8D2C9B9A29967D82C80A7C5CEC67E45E46C28A55AA84D.APK"
+        apk_file = "/tmp/androyara/allvirusSample/virussample/virussamplevirus5.apk"
         if not os.path.isfile(apk_file):
             return
         apk_parser = ApkPaser(apk_file)

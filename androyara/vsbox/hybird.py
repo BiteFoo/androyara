@@ -8,7 +8,7 @@
 '''
 import requests
 from requests.api import head
-from apkscanner.vsbox.vsbox import VSandbox
+from androyara.vsbox.vsbox import VSandbox
 
 
 class HybirdSanbox(VSandbox):

@@ -14,11 +14,11 @@ import re
 import sys
 import binascii
 
-from apkscanner.types import publics
-from apkscanner.utils.buffer import BuffHandle
+from androyara.types import publics
+from androyara.utils.buffer import BuffHandle
 
 
-log = logging.getLogger("apkscanner.xml")
+log = logging.getLogger("androyara.xml")
 
 
 # Type definiton for (type, data) tuples representing a value

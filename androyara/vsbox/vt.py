@@ -6,8 +6,8 @@
 @License :   (C)Copyright 2020-2021,Loopher
 @Desc    :   reference https://developers.virustotal.com/v3.0/reference#key-concepts
 '''
-
-from apkscanner.vsbox.vsbox import VSandbox
+import json
+from androyara.vsbox.vsbox import VSandbox
 import configparser
 
 
@@ -37,4 +37,14 @@ class VT(VSandbox):
         if result is None:
             return
 
-        self.echo("Info: sandbox : {}".format(self.sbox_name()), result)
+        # self.echo("info", json.dumps(result, indent=2))
+        total = result['total']
+        positives = result['positives']
+        permalink = result['permalink']
+        scan_data = result['scan_date']
+        info = '\n\tscan_result: %d/%d\n\tscan_date: %s\n\tpermalink: %s\n\tsha256: %s\n\t' % (
+            positives, total, scan_data, permalink, result['sha256']
+        )
+
+        self.echo("Info", "\n\t{} scan results: \n\t{}".format(
+            self.sbox_name(), info))

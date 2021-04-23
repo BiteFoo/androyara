@@ -9,10 +9,8 @@
 
 # Here put the import lib
 
-import os
-
-from apkscanner.parser.base_parser import BaserParser
-from apkscanner.types.types import*
+from androyara.parser.base_parser import BaserParser
+from androyara.types.types import*
 
 
 NS_ANDROID_URI = 'http://schemas.android.com/apk/res/android'

@@ -15,9 +15,9 @@ import unittest
 import os
 import json
 
-from apkscanner.core.apk_parser import ApkPaser
-from apkscanner.dex.dex_header import DexHeader
-from apkscanner.dex.dex_vm import  DexFileVM
+from androyara.core.apk_parser import ApkPaser
+from androyara.dex.dex_header import DexHeader
+from androyara.dex.dex_vm import  DexFileVM
 
 root = os.path.abspath(os.path.dirname(__file__))
 sample = root[:root.rfind(os.sep)]

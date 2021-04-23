@@ -11,7 +11,7 @@
 """
 
 
-from apkscanner.dex.dex_vm import DexFileVM
+from androyara.dex.dex_vm import DexFileVM
 class DexParser(object):
 
     parser_info = {

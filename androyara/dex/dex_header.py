@@ -14,7 +14,7 @@ import sys
 from struct import unpack, calcsize
 
 
-from apkscanner.dex.dex_method import *
+from androyara.dex.dex_method import *
 import re
 
 
@@ -33,6 +33,8 @@ class DexHeader(object):
         fp = io.BytesIO(buff)
 
         self.magic, = unpack("<4s", fp.read(4))
+        if not self.is_dex():
+            return
         self.version, = unpack("<4s", fp.read(4))
 
         self.checksum, = unpack("<I", fp.read(4))
@@ -72,7 +74,14 @@ class DexHeader(object):
         self.buff = fp
         self.__raw = buff
 
-        self.class_defs=None
+        self.class_defs = None
+
+    def is_dex(self):
+        # return hex(self.magic) == 0xa786564
+        dex = self.magic
+        if isinstance(dex, bytes):
+            dex = str(dex, encoding="utf-8")
+        return "dex" in dex
 
     def read_all(self, pkg):
         self.pkg = pkg
@@ -234,7 +243,7 @@ class DexHeader(object):
         if self.class_defs_idx_size <= 0:
             raise DexClassDefsError("class_defs_idx_size <0")
         index = 0
-        self.class_defs =[]
+        self.class_defs = []
         while index < self.class_defs_idx_size:
             class_def_item_off = self.class_defs_idx_offset + index * 32
             self.buff.seek(class_def_item_off, io.SEEK_SET)
@@ -255,10 +264,10 @@ class DexHeader(object):
                 # print("error class_data_off error ",file=sys.stderr)
                 continue
 
-            class_def ={
-                "class_name":clzz_name,
-                "class_idx":class_idx,
-                "code_item":[]
+            class_def = {
+                "class_name": clzz_name,
+                "class_idx": class_idx,
+                "code_item": []
             }
 
             self.buff.seek(clazz_data_off, io.SEEK_SET)
@@ -331,11 +340,11 @@ class DexHeader(object):
                 code_off = self.read_uleb128(self.buff)
                 # code_inss = self.read_code_item(code_off)
                 virtual_method_size -= 1
-                all_codes={
-                    "virtual_method_idx":virtual_method_idx,
-                    "method_name":method_name,
-                    "access_flags":access_flags,
-                    "code_off":code_off
+                all_codes = {
+                    "virtual_method_idx": virtual_method_idx,
+                    "method_name": method_name,
+                    "access_flags": access_flags,
+                    "code_off": code_off
                 }
                 class_def['code_item'].append(all_codes)
                 # print("virtual Method : %s  method_name: %s access_flag: %s code_off: %s code_ins len: %s" %
@@ -384,7 +393,8 @@ class DexHeader(object):
             '.R',
             '.BuildConfig'
         ]
-        if clazz:
+        if pkg is None or pkg == '':
+            # default all
             return True
 
         if isinstance(clazz, bytes):

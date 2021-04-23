@@ -11,7 +11,7 @@
 
 import os
 import unittest
-from apkscanner.core.axml_parser import AndroidManifestXmlParser
+from androyara.core.axml_parser import AndroidManifestXmlParser
 
 root = os.path.abspath(os.path.dirname(__file__))
 sample = root[:root.rfind(os.sep)]

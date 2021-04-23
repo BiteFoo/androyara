@@ -8,9 +8,9 @@
 '''
 
 import unittest
-from apkscanner.vsbox.vt import VT
-from apkscanner.vsbox.threatbook import ThreatbookSandbox
-from apkscanner.vsbox.hybird import HybirdSanbox
+from androyara.vsbox.vt import VT
+from androyara.vsbox.threatbook import ThreatbookSandbox
+from androyara.vsbox.hybird import HybirdSanbox
 
 
 class TestVsbox(unittest.TestCase):

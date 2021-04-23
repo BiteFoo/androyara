@@ -18,7 +18,7 @@ root = os.path.abspath(os.path.dirname(__file__))
 root = root[:root.rfind(os.sep)]
 user = root[:root.rfind(os.sep)]+os.sep+"user"
 
-logger = logging.getLogger("apkscanner.vbox")
+logger = logging.getLogger("androyara.vbox")
 logger.setLevel(logging.INFO)
 
 

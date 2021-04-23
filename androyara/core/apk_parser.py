@@ -24,11 +24,11 @@ from zlib import crc32
 import binascii
 import asn1crypto
 from asn1crypto import cms, x509, keys
-from apkscanner.parser.base_parser import BaserParser
-from apkscanner.dex.dex_vm import DexFileVM
-from apkscanner.core.axml_parser import AndroidManifestXmlParser, ARSCParser, ARSCResTableConfig
+from androyara.parser.base_parser import BaserParser
+from androyara.dex.dex_vm import DexFileVM
+from androyara.core.axml_parser import AndroidManifestXmlParser, ARSCParser, ARSCResTableConfig
 
-log = logging.getLogger("apkscanner.apk")
+log = logging.getLogger("androyara.apk")
 
 
 class ApkReadException(BaseException):

@@ -7,9 +7,11 @@
 @Desc    :   DexFile VM
 '''
 
-
-from apkscanner.utils.buffer import BuffHandle
-from apkscanner.dex.dex_header import DexHeader
+from os import pardir
+import re
+from androyara.utils.buffer import BuffHandle
+from androyara.dex.dex_header import DexHeader
+from androyara.utils.utility import echo
 
 
 class DexFileVM(BuffHandle):
@@ -18,10 +20,16 @@ class DexFileVM(BuffHandle):
         super(DexFileVM, self).__init__(buff)
 
         self.raw = buff
-
-        #
+        # need check apk
         self.dex_header = DexHeader(buff)
+        self._ok = self.dex_header.is_dex()
+        if not self._ok:
+            echo("error", "is not dex file format", 'red')
+            return
         self.dex_header.read_all(pkgname)  # read all pkg class
+
+    def ok(self):
+        return self._ok
 
     def build_map(self):
         """
@@ -43,18 +51,32 @@ class DexFileVM(BuffHandle):
                 # check content:// or http(s)://
                 print(k, v)
 
-    def all_strings(self):
+    def all_strings(self, pattern: str):
         """
         return all dex strings
         """
-        strings = ""
+        strings = []
+        reobjs_exprs = []
+        if "," in pattern:
+            for p in pattern.split(','):
+                expr = re.compile(p, re.IGNORECASE)
+                reobjs_exprs.append(expr)
+        elif pattern is not None and pattern != '':
+            reobjs_exprs.append(re.compile(pattern))
+
         for _, v in self.dex_header.string_table_map.items():
             try:
                 if isinstance(v, bytes):
                     v = str(v, encoding="utf-8")
             except UnicodeDecodeError:
                 continue
-            strings += v+"\n"
-            # if "://" in v:
-            #     print(k, v)
+
+            if pattern is None:
+                strings.append(v)
+                continue
+
+            for expr in reobjs_exprs:
+                if expr.search(v):
+                    strings.append(v)
+
         return strings
