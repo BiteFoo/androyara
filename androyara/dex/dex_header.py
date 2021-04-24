@@ -260,7 +260,6 @@ class DexHeader(object):
             if not self.is_target_clazz(target_pkg, clzz_name):
                 continue
             # target class
-            print("--> read classDefs %s" % ())
             if clazz_data_off <= 0:
                 # print("error class_data_off error ",file=sys.stderr)
                 continue

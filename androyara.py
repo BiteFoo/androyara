@@ -16,13 +16,14 @@ from androyara.vsbox.vt import VT
 import argparse
 from androyara.core.apk_parser import ApkPaser
 from androyara.core.analysis_apk import AnalyzerApk
+from androyara.core.axml_parser import AndroidManifestXmlParser
 
 
 pattern = None
 save = None
 rule = None
 input_file = None
-method = None
+method_name_arg = None
 
 
 def query_report(resource):
@@ -36,7 +37,7 @@ def query_report(resource):
 
 def apk_info(apk):
     # get_apk_info
-    if apk.endswith('.apk') or apk.endswith('.APK'):
+    if not apk.endswith('.apk') and  apk.endswith('.APK'):
         echo("error", "need a apk file", 'red')
         return
     apk_parser = ApkPaser(apk)
@@ -44,6 +45,22 @@ def apk_info(apk):
 
     # method
 
+
+def extract_android_manifest_info():
+
+    if not os.path.isfile(input_file):
+        echo("error","need apk or AndroidManifest.xml as input file!!",'red')
+        return 
+    elif input_file.endswith('.xml'):
+        axml = AndroidManifestXmlParser(input_file)
+        echo("info","\n"+str(axml))
+        pass
+    elif input_file.endswith('apk'):
+        apk_parser = ApkPaser(input_file)
+        echo("info","\n"+str(apk_parser.mainifest_info()))
+        pass
+    else:
+        echo("error","unknow {} filtyep ".format(input_file),'red')
 
 def extract_apk_info(apk):
     if apk is None or not os.path.isfile(apk):
@@ -53,7 +70,7 @@ def extract_apk_info(apk):
 
     for s in apk_parser.all_strings([pattern]):
         echo("info", "%s" % (s))
-    if method is None and method == '':
+    if method is None or method == '':
         #
         echo("warning", "no method name ", 'yellow')
         return
@@ -64,8 +81,8 @@ def extract_apk_info(apk):
             try:
                 if isinstance(method_name, bytes):
                     method_name = str(method_name, encoding="utf-8")
-                    echo("info", "method name: %s" % (method_name))
-                if method == method_name:
+                    # echo("info", "method name: %s" % (method_name))
+                if method_name_arg is None and method_name_arg == method_name:
                     echo("warning", "got method :%s" % (method), 'yellow')
                     apk_parser.print_ins(method_['code_off'])
 
@@ -91,28 +108,38 @@ def dex_info(pkg, dex):
     patters = []
     if pkg is None:
         echo("warning", "pkg is None and will use empty to retrive all methods in dex file.", 'yellow')
-    if pattern is None:
-        # retrive content:// and http(s)://
-        # pattern = '://'
-        patters.append("://")  # 默认
-        echo("warning", "pattern is None and will return all strings in dex file.", 'yellow')
+    # if pattern is None:
+    #     # retrive content:// and http(s)://
+    #     # pattern = '://'
+    #     patters.append("://")  # 默认
+    #     echo("warning", "pattern is None,use :// to search string .", 'yellow')
+    patters.append(pattern)
     with open(dex, 'rb') as f:
 
         vm = DexFileVM(pkgname=pkg, buff=f.read())
         if not vm.ok:
             echo("error", "{} is not a dex format file.", 'red')
             return
-        for i, s in enumerate(vm.all_strings([pattern])):
+        for i, s in enumerate(vm.all_strings(patters)):
             echo("%d" % (i), "%s" % (s))
+        echo("info","method_name_arg: %s"%(method_name_arg))
         for class_def in vm.all_class_defs():
+            # echo("info","%s"%(class_def['class_name']))
+            class_name = class_def['class_name']
+            if isinstance(class_name,bytes):
+                class_name = str(class_name,encoding="utf-8")
             for method in class_def['code_item']:
                 method_name = method['method_name']
 
                 try:
                     if isinstance(method_name, bytes):
                         method_name = str(method_name, encoding="utf-8")
-                    if "onCreate" == method_name:
-                        vm.print_ins(method_name['code_off'])
+                    if method_name_arg is not  None and method_name == method_name_arg:
+                        echo("info"," -> %s/%s"%(class_name,method_name))
+                        vm.print_ins(method['code_off'])
+                    elif method_name_arg is None:
+                        echo("info"," -> %s/%s"%(class_name,method_name))
+
 
                 except UnicodeDecodeError:
                     continue
@@ -123,7 +150,7 @@ def analysis_apk(apk):
     # 检测
     echo("info", "analysis apk {} ".format(apk))
     if os.path.isfile(apk):
-        if not apk.endswith('.apk') and not apk.endswith('.APK'):
+        if not apk.endswith('.apk') or not apk.endswith('.APK'):
             echo("error", "need a apk file !!", 'red')
             return
         analyzer = AnalyzerApk(apk, rule, pattern)
@@ -132,7 +159,7 @@ def analysis_apk(apk):
     elif os.path.isdir(apk):
         for root, _, fs in os.walk(apk):
             for f in fs:
-                if apk.endswith('.apk') or not apk.endswith('.APK'):
+                if f.endswith('.apk') or not f.endswith('.APK'):
                     infile = os.path.join(root, f)
                     # analysis 1
                     analyzer = AnalyzerApk(infile, rule, pattern)
@@ -174,13 +201,16 @@ if __name__ == '__main__':
 
     parser.add_argument('-m', '--method_name', default=None, type=str,
                         metavar="method_name ", help="A method name in dex file.")
+    parser.add_argument('-x','--xml',default=False,metavar="true/false",type=bool,help='--xml read AndroidManifest.xml or apk\' AndroidManifest.xml information')
     args = parser.parse_args()
 
     pattern = args.pattern
     save = args.save
     rule = args.rule
     input_file = args.file
-    method = args.method_name
+    method_name_arg = args.method_name
+
+    echo("info","dex: {} info: {} extract: {}  analysis: {}".format(args.dex,args.info,args.extract,args.analysis))
 
     if rule is not None:
         if not os.path.isfile(rule):
@@ -188,15 +218,18 @@ if __name__ == '__main__':
             parser.print_help()
             sys.exit(1)
     if not os.path.isfile(input_file) and not os.path.isdir(input_file):
-        echo("error", "apk need to specificate.", "red")
+        echo("error", "need file or directory!!.", "red")
         parser.print_help()
         sys.exit(1)
+
+    
     if args.info:
         if not os.path.isfile(input_file):
             echo("error", "apk need to specificate.", "red")
             parser.print_help()
             sys.exit(1)
         apk_info(apk=input_file)
+    
     elif args.extract:
         if save is None:
             echo(
@@ -208,6 +241,9 @@ if __name__ == '__main__':
             query_report(resource)
     elif args.dex:
         dex_info(args.pkg, args.file)
+
+    elif args.xml:
+        extract_android_manifest_info()
     elif args.analysis:
         analysis_apk(input_file)
 

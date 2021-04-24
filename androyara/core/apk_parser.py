@@ -322,6 +322,8 @@ class ApkPaser(BaserParser):
         self.package = self.axml.package
         # Read
         # print("--> AndoridManifest.xml info ",self.axml)
+    def mainifest_info(self):
+        return self.axml
 
     def ok(self):
         return self.dex_vm.ok()

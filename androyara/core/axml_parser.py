@@ -43,7 +43,7 @@ class AndroidManifestXmlParser(BaserParser):
         # self.show_xml()
 
         if self.axml['AndroidManifest.xml'].tag != 'manifest':
-            raise AxmlExcetion("parse Android mnifest erro r")
+            raise AxmlExcetion("parse AndroidManifest.xml error  ,need AndroidManifest.xml file ")
         self.android_version = {}
         self.package = ""
         self.permissions = []
@@ -255,8 +255,9 @@ class AndroidManifestXmlParser(BaserParser):
         """
         Return All export components info
         """
-
+        # return self.
         pass
+
 
     def get_app_name(self):
         """

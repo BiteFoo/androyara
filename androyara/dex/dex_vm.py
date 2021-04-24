@@ -60,16 +60,19 @@ class DexFileVM(BuffHandle):
                 print(k, v)
 
     def print_ins(self, offset):
-        for i, ins in enumerate(self.dex_header.read_code_item(offset)):
+        for i, ins in enumerate(self.dex_header.read_code_instrs(offset)):
             print(i, "%s" % (hex(ins)))
 
     def all_strings(self, pattern_list: list):
         """
         return all dex strings
         """
+        echo("warning","pattern list : %s"%(pattern_list),'yellow')
         strings = []
         reobjs_exprs = []
         for pattern in pattern_list:
+            if pattern is None:
+                continue
             if "," in pattern:
                 for p in pattern.split(','):
                     expr = re.compile(p, re.IGNORECASE)
