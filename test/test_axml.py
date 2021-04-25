@@ -22,10 +22,10 @@ class AxmlTesst(unittest.TestCase):
     def test_axml(self):
 
         for xml in [sample+os.sep+"samples"+os.sep+"AndroidManifest.xml"]:
-            axml = AndroidManifestXmlParser(xml)
-            # print(axml)
-            # print(axml.get_all_export_components())
+            # axml = AndroidManifestXmlParser(xml)
+            # # print(axml)
+            # # print(axml.get_all_export_components())
 
-            print(axml.get_main_activity())
+            # print(axml.get_main_activity())
             # axml.get_main_activity()
             pass

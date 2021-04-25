@@ -53,7 +53,7 @@ class VSandbox(object):
             result = self.query(url,  params)
             if result is None:
                 self.echo("warning", " {} can't query anything from {} sandbox".format(
-                    finger_print))
+                    finger_print, self.sbox_name()))
                 return
         else:
             self.echo(

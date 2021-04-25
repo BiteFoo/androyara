@@ -67,7 +67,7 @@ class DexFileVM(BuffHandle):
         """
         return all dex strings
         """
-        echo("warning","pattern list : %s"%(pattern_list),'yellow')
+        # echo("warning", "pattern list : %s" % (pattern_list), 'yellow')
         strings = []
         reobjs_exprs = []
         for pattern in pattern_list:
@@ -75,15 +75,17 @@ class DexFileVM(BuffHandle):
                 continue
             if "," in pattern:
                 for p in pattern.split(','):
-                    expr = re.compile(p, re.IGNORECASE)
+                    expr = re.compile(p)
                     reobjs_exprs.append(expr)
             elif pattern is not None and pattern != '':
                 reobjs_exprs.append(re.compile(pattern))
+                # echo("info", "pattern: %s" % (pattern), 'yellow')
 
         for _, v in self.dex_header.string_table_map.items():
             try:
                 if isinstance(v, bytes):
                     v = str(v, encoding="utf-8")
+                # echo("warning", "string: {}".format(v), 'yellow')
             except UnicodeDecodeError:
                 continue
 
@@ -94,6 +96,7 @@ class DexFileVM(BuffHandle):
 
             for expr in reobjs_exprs:
                 if expr.search(v):
+                    # echo("debug", "v: %s" % (v), 'white')
                     strings.append(v)
 
         return strings

@@ -9,6 +9,7 @@
 
 import os
 import json
+from androyara.vsbox.vt import VT
 from androyara.utils.utility import echo
 from androyara.core.apk_parser import ApkPaser, FileNotFound
 
@@ -23,6 +24,7 @@ class AnalyzerApk(object):
         self.filename = apk
         self.rules = None
         try:
+            # echo("info", " analysis : {}".format(apk))
             self.apk_parser = ApkPaser(apk)
         except FileNotFound:
             self.ok = False
@@ -31,6 +33,8 @@ class AnalyzerApk(object):
             # echo("error", " parser \"{}\" error ,exception: {}".format(apk, e), 'red')
             self.ok = False
             return
+
+        self.vt = VT(self.apk_parser._app_sha256)
 
     def __analyzer_string(self):
         """
@@ -76,18 +80,39 @@ class AnalyzerApk(object):
             result.append(item)
         return result
 
+    def _online_sandbox(self):
+        result = self.vt.analysis()
+        if result is None:
+            return False
+        echo("info", "VT query reult:")
+        echo("positives", result['positives'], "magenta")
+        echo("virusName", result['virusName'], "red")
+        echo("link", result['link'], "green")
+        echo("scanDate", result['scanDate'], "yellow")
+        echo("path", self.filename, "white")
+        return True
+
     def analyzer(self):
         if not self.ok:
-            return
+            return False
         elif not os.path.isfile(self.rule):
             echo("error", "need rule file!!", 'red')
-            return
+            return False
         elif not self.apk_parser.ok:
             echo("error", " {} is not a apk file !!!", 'red')
-            return
+            return False
         self.rules = self.__read_rule()
-        if self.__analyzer_string():
-            return
 
-        elif self.__analyzer_method():
-            pass
+        return self.__analyzer_string()\
+            or self.__analyzer_method()\
+            or self._online_sandbox()
+
+        # if self.__analyzer_string():
+        #     return True
+
+        # elif self.__analyzer_method():
+        #     return True
+        # elif self._online_sandbox():
+        #     return True
+        # else:
+        #     return False
