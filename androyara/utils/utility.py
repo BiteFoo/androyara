@@ -14,3 +14,9 @@ from termcolor import colored
 def echo(tag, msg, color="green"):
     # show info
     print(colored("[{}]: {}".format(tag, msg), color=color))
+
+
+def byte2str(s):
+    if isinstance(s, bytes):
+        s = str(s, encoding="utf-8")
+    return s

@@ -154,9 +154,11 @@ class DexHeader(object):
 
         # print(":--<  type item size :%d  total read: %d" %
         #       (self.type_idx_size, len(self.type_item_offset_list)))
+
         #
+        # print("--> type_map ",self.ty)
         # for offset in self.type_item_offset_list:
-        #
+
         #     for idx, str_offset in enumerate(self.string_item_offset_list):
         #         if idx == offset:
         #             print("-----> read type item :%s" %
@@ -185,9 +187,15 @@ class DexHeader(object):
             self.dex_method_obj_index[index] = dex_method_proto
 
             index += 1
-        # debugging show
+        # for i in self.type_item_offset_list:
+        #     print("--> type_idx: %d " % (i))
+        # # debugging show
+        # print("--> DexMethodProto")
         # for dex_method_proto in self.dex_method_obj_list:
         #     print(dex_method_proto)
+        # for i, item in self.dex_method_obj_index.items():
+        #     print("-->> self.dex_method_obj_index ",
+        #           i, str(self.dex_method_obj_index[i]))
 
     def read_field_idx_datas(self):
 
@@ -234,6 +242,7 @@ class DexHeader(object):
             self.method_idx_index[index] = method_idx_obj
 
             index += 1
+        ##
         # print("--> DexMethodIdx Info ")
         # for method_idx in self.method_idx_list:
         #     print(method_idx)
@@ -309,7 +318,8 @@ class DexHeader(object):
             while direct_method_size > 0:
                 direct_method_ = self.read_uleb128(self.buff)
                 direct_method_idx += direct_method_
-                method_name = self.get_method_name_by_idx(direct_method_idx)
+                method_name, signature = self.get_method_name_by_idx(
+                    direct_method_idx)
                 access_flags = self.read_uleb128(self.buff)
                 code_off = self.read_uleb128(self.buff)
                 # code_inss = self.read_code_item(code_off)
@@ -318,9 +328,11 @@ class DexHeader(object):
                 all_codes = {
                     "direct_method_idx": direct_method_idx,
                     "method_name": method_name,
+                    "signature": signature,
                     "access_flags": access_flags,
                     "code_off": code_off
                 }
+
                 class_def['code_item'].append(all_codes)
 
             #     print("direct  Method : %s  method_name: %s access_flag: %s code_off: %s code_ins len: %s" %
@@ -335,7 +347,8 @@ class DexHeader(object):
             while virtual_method_size > 0:
                 virtual_method_ = self.read_uleb128(self.buff)
                 virtual_method_idx += virtual_method_
-                method_name = self.get_method_name_by_idx(virtual_method_idx)
+                method_name, signature = self.get_method_name_by_idx(
+                    virtual_method_idx)
                 access_flags = self.read_uleb128(self.buff)
                 code_off = self.read_uleb128(self.buff)
                 # code_inss = self.read_code_item(code_off)
@@ -343,6 +356,7 @@ class DexHeader(object):
                 all_codes = {
                     "virtual_method_idx": virtual_method_idx,
                     "method_name": method_name,
+                    "signature": signature,
                     "access_flags": access_flags,
                     "code_off": code_off
                 }
@@ -375,8 +389,11 @@ class DexHeader(object):
 
         # print("--> code_off :%s method_instructions_size:%s"%(hex(code_off),hex(method_instructions_size)))
         while method_instructions_size > 0:
-            ins_code, = unpack("H", _buff.read(2))
-            code_instructions.append(ins_code)
+            # ins_code, = unpack("B", _buff.read(2)) # 原始读取的指令是两个字节，为了方便输出，每次读取一个字节
+            # code_instructions.append(ins_code)
+            for _ in range(2):
+                ins_code, = unpack("B", _buff.read(1))
+                code_instructions.append(ins_code)
             method_instructions_size -= 1
 
         return code_instructions
@@ -409,36 +426,50 @@ class DexHeader(object):
             expr = re.compile(a)
             if expr.search(clazz):
                 return False
+        # print("--> check %s  class: %s" % (pkg, clazz))
+        return True
+        # if pkg is None or pkg == '':
+        #     return True
+        # clazz = clazz.replace("L", "").replace("/", '.').replace(";", "")
 
-        if pkg is None or pkg == '':
-            return True
-        clazz = clazz.replace("L", "").replace("/", '.').replace(";", "")
-
-        # filter thridpart class ,like google's code etc
-        suffix = clazz[clazz.rfind('.'):]
-        if suffix in need_filter_classes:
-            return False
-        #
-        target = re.compile(pkg)
-        if target.match(clazz):
-            return True
-        return False
+        # # filter thridpart class ,like google's code etc
+        # suffix = clazz[clazz.rfind('.'):]
+        # if suffix in need_filter_classes:
+        #     return False
+        # #
+        # target = re.compile(pkg)
+        # if target.match(clazz):
+        #     return True
+        # return False
 
     def get_method_name_by_idx(self, idx):
 
         dex_method_idx = self.method_idx_list[idx]
 
-        short_class_idx = dex_method_idx.class_idx
+        # short_class_idx = dex_method_idx.class_idx
         name_idx = dex_method_idx.name_idx
         proto_idx = dex_method_idx.proto_idx
 
         method_name = self.get_string_by_idx(name_idx)
 
-        clazz_name = self.get_class_name_by_idx(short_class_idx)
-        method_proto_name = self.get_method_proto_name_by_idx(proto_idx)
+        # clazz_name = self.get_class_name_by_idx(short_class_idx)
+        signature = self.get_method_proto_name_by_idx(
+            proto_idx)
 
-        # print("--> class_name: %s , method_proto_name:%s method_name:%s"%(clazz_name,method_proto_name,method_name))
-        return method_name
+        # print("dex_method_idx: "+str(dex_method_idx))
+        # print("--> class_name: %s , method: %s, signature:%s " %
+        #       (clazz_name, method_name, signature))
+
+        return method_name, signature
+
+    def get_param_type(self, _idx):
+        # for offset in self.type_item_offset_list:
+
+        for idx, str_offset in enumerate(self.string_item_offset_list):
+            if idx == _idx:
+                return self.string_table_map[str_offset]
+                # print("-----> read type item :%s" %
+                #         (hex(offset)), self.string_table_map[str_offset])
 
     def get_class_name_by_idx(self, idx):
         """
@@ -447,15 +478,56 @@ class DexHeader(object):
         off = self.string_item_offset_list[self.type_item_offset_list[idx]]
         return self.string_table_map[off]
 
+    def read_param_size(self, paramoffset):
+        """
+        读取参数 paramoffset
+        """
+        if paramoffset == 0:
+
+            # 没有参数的情况 paramoffset = 0
+            return 0, 0
+        buff = io.BytesIO(self.__raw)
+        buff.seek(paramoffset, io.SEEK_CUR)
+        size, = unpack('I', buff.read(4))
+        idx, = unpack("H", buff.read(2))
+        # print("-> paramoffset:%s size: %d  ,idx : %s" %
+        #       (hex(paramoffset), size, hex(idx)))
+        return size, idx
+
     def get_method_proto_name_by_idx(self, idx):
+        """
+        方法的签名信息
+        """
 
         dexmethod_proto = self.dex_method_obj_index[idx]
-        method_proto_name = self.get_string_by_idx(dexmethod_proto.shorty_idx)
+
+        # method_proto_name = self.get_string_by_idx(dexmethod_proto.shorty_idx)
         rtvalue = self.get_string_by_idx(
             self.type_item_offset_list[dexmethod_proto.rturn_type_idx])
 
-        # print("rtvalue: %s"%(rtvalue))
-        return method_proto_name
+        # print("rtvalue: %s" % (rtvalue))
+        size, _idx = self.read_param_size(
+            dexmethod_proto.parameter_type_offset)
+        # print("--> 检测 参数 "+str(dexmethod_proto))
+        signature = "("
+        if size == 0:
+            signature += ")"
+        else:
+            for _ in range(size):
+                # print("dexmethod_proto.shorty_idx :  %s  type: %s  : list: %s" %
+                #       (hex(dexmethod_proto.shorty_idx), self.type_item_offset_list[dexmethod_proto.shorty_idx], self.type_item_offset_list))
+                var = self.get_param_type(
+                    self.type_item_offset_list[_idx])
+                if isinstance(var, bytes):
+                    var = str(var, encoding="utf-8")
+                signature += var+","
+            signature = signature[:-1]
+            signature += ")"
+        if isinstance(rtvalue, bytes):
+            rtvalue = str(rtvalue, encoding="utf-8")
+        signature += rtvalue
+
+        return signature
 
     def get_string_by_idx(self, idx):
         off = self.string_item_offset_list[idx]

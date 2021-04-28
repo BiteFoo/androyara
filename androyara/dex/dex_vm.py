@@ -60,8 +60,36 @@ class DexFileVM(BuffHandle):
                 print(k, v)
 
     def print_ins(self, offset):
-        for i, ins in enumerate(self.dex_header.read_code_instrs(offset)):
-            print(i, "%s" % (hex(ins)))
+        ins_ = ' '
+        instrus = self.dex_header.read_code_instrs(offset)
+        print("")
+        #  red, green, yellow, blue, magenta, cyan, white.
+        echo("info", "codeoff:%s codesize:%s" %
+             (hex(instrus[0]), hex(instrus[1])), "magenta")
+        print("")
+
+        # 格式化输出
+        print(""+" 0 "+" "+""+" 1 "+" "+" 2 "+" "+""+" 3 "
+              + "  "+" 4 "+" "+""+" 5 "+" "+" 6 "+" "+""+" 7 "
+              + "  "+" 8 "+" "+""+" 9 "+" "+" A "+" "+""+" B "
+              + "  "+" C "+" "+""+" D "+" "+" E "+" "+""+" F ")
+
+        print("-"*16 + " "+"-"*16+" "+"-"*16+" "+"-"*16)
+        save = []
+        for i, ins in enumerate(instrus[2:]):
+            if i > 0 and i % 16 == 0:
+                print("%s" % (ins_))
+                print("")
+                ins_ = ""
+
+            if i > 0 and i % 4 == 0:
+                ins_ += " "
+            ins_ += "%.2x " % (ins)+" "
+            save.append("%.2x " % (ins))
+        print(ins_)
+        # print("")
+        echo("info", "all instructions ", )
+        echo("warning", "\n"+" ".join(save), 'yellow')
 
     def all_strings(self, pattern_list: list):
         """
