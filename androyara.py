@@ -11,6 +11,7 @@ import os
 import argparse
 import sys
 import json
+from androyara.utils.utility import byte2str
 from androyara.dex.dex_vm import DexFileVM
 from androyara.utils.utility import echo
 from androyara.vsbox.vt import VT
@@ -60,7 +61,7 @@ def apk_info(args):
     if input_file is None or not os.path.isfile(input_file):
         echo("error", "need apk.", "red")
         sys.exit(1)
-    if not input_file.endswith('.apk') and input_file.endswith('.APK'):
+    if not input_file.endswith('.apk') and not input_file.endswith('.APK'):
         echo("error", "need a apk file", 'red')
         return
 
@@ -102,30 +103,41 @@ def extract_apk_info(args):
     if input_file is None or not os.path.isfile(input_file):
         echo("error", "need a apk file", 'red')
         return
+    if pattern is None:
+        pattern = "://"
     # echo("info", "pattern :%s" % (pattern))
     apk_parser = ApkPaser(input_file)
 
     for s in apk_parser.all_strings([pattern]):
         echo("info", "%s" % (s))
-    if method_name_arg is None or method_name_arg == '':
-        #
-        echo("warning", "no method name ", 'yellow')
-        return
-    echo("info", "--"*10+"show method : %s " % (method_name_arg)+"--"*10)
-    for class_def in apk_parser.all_class_defs():
-        for method_ in class_def['code_item']:
-            method_name = method_['method_name']
-            try:
-                if isinstance(method_name, bytes):
-                    method_name = str(method_name, encoding="utf-8")
-                    # echo("info", "method name: %s" % (method_name))
-                if method_name_arg is None and method_name_arg == method_name:
-                    echo("warning", "got method :%s" %
-                         (method_name_arg), 'yellow')
-                    apk_parser.print_ins(method_['code_off'])
+    # if method_name_arg is None or method_name_arg == '':
+    #     #
+    #     echo("warning", "no method name ", 'yellow')
+    #     return
 
-            except UnicodeDecodeError:
-                continue
+    echo("info", "--"*10+"show method info: %s " % (method_name_arg)+"--"*10)
+    for class_def in apk_parser.all_class_defs():
+        clzz_name = byte2str(class_def['class_name'])
+        # echo("info", "%s" % (clzz_name))
+
+        for method_ in class_def['code_item']:
+
+            method_name = byte2str(method_['method_name'])
+            signature = byte2str(method_['signature'])
+
+            if method_name_arg is None:
+                echo("info", "-> %s-->%s%s" %
+                     (clzz_name, method_name, signature))
+
+            elif method_name_arg == method_name:
+                echo("info", "className: %s" % (clzz_name))
+                echo("info", "methodName: %s" % (method_name))
+                echo("info", "signature: %s" % (signature))
+                echo("instructions", "--"*10, 'yellow')
+
+                # echo("warning", "got method :%s" %
+                #      (method_name_arg), 'yellow')
+                apk_parser.print_ins(method_['code_off'])
 
 
 def dex_info(args):
@@ -145,8 +157,8 @@ def dex_info(args):
     patters = []
     if pkg is None:
         echo("warning", "pkg is None and will retrive all methods in dex file.", 'yellow')
-    if pattern is None or pattern == '':
-        pattern = "://"
+    # if pattern is None or pattern == '':
+    #     pattern = "://"
 
     patters.append(pattern)
     with open(input_file, 'rb') as f:
@@ -155,28 +167,27 @@ def dex_info(args):
         if not vm.ok:
             echo("error", "{} is not a dex format file.", 'red')
             return
-        for i, s in enumerate(vm.all_strings(patters)):
-            echo("%d" % (i), "%s" % (s))
-        echo("info", "method_name_arg: %s" % (method_name_arg))
+        if pattern is not None:
+            # if pattern is not None will show string
+            for i, s in enumerate(vm.all_strings(patters)):
+                echo("%d" % (i), "%s" % (s))
+        if method_name_arg is None:
+            echo("warning", " methodName 为空，默认输出全部方法信息", 'yellow')
         for class_def in vm.all_class_defs():
-            # echo("info","%s"%(class_def['class_name']))
-            class_name = class_def['class_name']
-            if isinstance(class_name, bytes):
-                class_name = str(class_name, encoding="utf-8")
+            class_name = byte2str(class_def['class_name'])
+
             for method in class_def['code_item']:
-                method_name = method['method_name']
+                method_name = byte2str(method['method_name'])
+                signature = byte2str(method['signature'])
 
-                try:
-                    if isinstance(method_name, bytes):
-                        method_name = str(method_name, encoding="utf-8")
-                    if method_name_arg is not None and method_name == method_name_arg:
-                        echo("info", " -> %s/%s" % (class_name, method_name))
-                        vm.print_ins(method['code_off'])
-                    elif method_name_arg is None:
-                        echo("info", " -> %s/%s" % (class_name, method_name))
-
-                except UnicodeDecodeError:
-                    continue
+                if method_name_arg is not None and method_name == method_name_arg:
+                    print("")
+                    echo("info", " Got target -> %s-->%s%s" %
+                         (class_name, method_name, signature))
+                    vm.print_ins(method['code_off'])
+                elif method_name_arg is None:
+                    echo("info", " -> %s-->%s%s" %
+                         (class_name, method_name, signature))
 
 
 def analysis_apk(args):
