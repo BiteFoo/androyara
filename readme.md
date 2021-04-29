@@ -1,88 +1,90 @@
 # Androyara
-`Androyara`是一个`APK`病毒分析工具，可以支持`apk,dex`的文件分析。
-> odex 目前暂时不自持
 
-分析一个`apk`是否具有恶意行为，可以通过静态和动态的两个层面的行为来完成。
+`Androyara` 是基于`python3.7+`开发的`android apk` 分析的工具，主要用于`android`的病毒分析和特征提取，也包括一些其他的信息提取。
 
-**静态层面主要有两个引擎**
-* `AVEngine` 是一个使用`c++`写的一个分析引擎，目前只支持`unix`的运行，暂时不支持`windows`系统。
-* `Androyara`是一个使用`python`写的一个分析引擎，这个引擎目的是加速app的分析。
+主要功能
 
-**动态层面的分析**
+* 读取apk基本信息
+* 读取AndroidManifest.xml 信息
+* 搜索Apk/Dex内的字符串，方法，指令，类型
+* 支持yara
 
-在动态的分析层主要通过一个模拟器启动待测试app运行时的动态检测，通过运行时的行为监测并识别对应的特征实现。
+```shell
+python3 androyara.py -h
+[author]:  loopher 
+[version]:  1.0 
 
-## 为什么会有这个程序
-很多时候在分析一个app是否是恶意的程序，需要经过以下几个步骤
-* 病毒沙箱引擎（哈勃）获取到app的基本分析报告
-* 自己分析
-    * 使用模拟器或者者真机运行app
-    * 观察是否有勒索信息，锁机等恶意行为来判定是否是恶意app
-    * 逆向分析
-    * 提取特征并记录
+usage: androyara.py [options]
 
-上面的几个都是比较常规的动作，但是要想能获取到app的一些详细特征或者要想自己实现一个特征的提取会不知道怎么做。我们知道在windows中的病毒分析中，有一个检测规则工具`YARA`能识别的`PE`中的一些特征，只要你的规则写的准确，就能精确识别程序。`android`的分析工具中并未有这种比较精确的检测程序，很多都是检测`pkg,md5,一些厂商提供的api`来确定一个app是否是恶意。所以，我写这个工具的目的就是能提供一个工具能根据自己的规则来识别的app，达到类似`yara`的效果。
+optional arguments:
+  -h, --help            show this help message and exit
 
-**功能**
+options:
+  {query,search_dex,manifest,apkinfo,search_apk,yara_scan}
+    query               query from VT
+    search_dex          search dex string or method all instructions from dex
+    manifest            Parsing Binary AndroidManifest.xml
+    apkinfo             Apk base info
+    search_apk          search string or method instructions from apk
+    yara_scan           Using yara rule to scan
 
-通过自定义的规则扫描识别`apk` ,支持以下几种特性搜索
-* 字符串 `可能有些字符串并不是很完美，需要特别注意`
-* 方法指令匹配 `通过提供类似yara的规则识别方法体的指令`
-* 支持自主查询在线沙箱例如`vt,threatbook`等获取相关的信息，可以参考`user/user.conf` 的配置
-* 
-
-匹配规则，需要补充一下，例如 `beta_rule model`
-```sh
-{
-    "author":"Loopher",
-    "description":"This is rule for testing",
-    "rules":[
-        {
-            "name":"Testing ApkScanner scann rules"
-            "string":"", # strings search 
-            "string2":"",# strings search
-            "shell_code":"5E 00 16 00 ", # bin search 
-            "file_type":"apk,xml" # apk --> xxx.apk xml --> AndroidManifest.xml
-        },
-        {},
-    ]
-}
 ```
 
-字符串的检测可能并不是很理想，因为有些字符串并非可见字符或者不能正常解码，这种是一个不完美的情况，需要能够接受。
-```sh
-python3 androyara.py -e true -f /path/to/test.apk
+## 使用方法
+### 读取apk基本信息
+要想获取一个apk的基本信息包括
+* `application`
+* `MainActivity`
+* `fingerprint: sha256`
+* `signed version: V1 V2 V3`
+* `certification`
+* `pkgname`
+* `appName`
+
+使用如下命令
+```shell
+python3 androyara apkinfo -a samples/aaa.apk -i
 ```
+![apk_info_i](./img/apk_info_i.png)
+
+还可以查看`apk内的文件`，使用如下命令
+```shell
+python3 androyara.py apkinfo -a samples/aaa.apk --zipinfo
+```
+![apk_info_zipinfo](./img/apk_info_zipinfo.png)
 
 
-
-## 工具的特性
-这个工具具有一些几个特征
-* 可以提取待分析app特征 `engine` **需要在unix的系统下执行**
-* 自定义规则识别app并输出对应的规则信息
-* 一些在线沙箱查询api操作，这个需要填写`user/user.conf`文件
-* 输出一个详细的app分析报告
-    * app的基本信息
-    * app的四大组件信息
-    * 被规则匹配中的方法信息
-
-使用`androguard`的人都知道这个程序在分析app的是特别耗内存，如果一个大的app在就是吃光电脑的内存，为了加速对一个APP的分析
-
-重新设计了一个分析引擎，可以尽可能的减少对内存的消耗。不止如此，`Androyara`的目的是分析恶意软件的特征，内置了300+的恶意家族的特征，可以在运行时分析出已知的病毒家族和记录未知的apk的特征，使用者可以自己将对应的app病毒家族命名记录到提取的特征中。
+### 读取AndroidManifest.xml 信息
+有时候只需要获取`AndroidManifest.xml` 的信息而不需要读取`apk`的全部信息，使用`manifest` 选项可以获取`AndroidManifest.xml`的信息。
 
 
-## apk分析
-`apk`的分析借鉴的`androguard`的分析思路来实现分析，主要功能
-* dex的分析
-* odex的分析
-* AndroidManifest.xml的分析
-* 签名信息的分析
+**支持AndroidManifest.xml和输入apk来读取**
+主要输出内容 `包名和四大组件信息`，如下
 
-## engine
+```shell
+python3 androyara.py  manifest -m samples/AndroidManifest.xml -b
+```
+![manifest](./img/manifest.png)
+可以只选择查看`activity` 或者其他的组件信息，**还可以查看所有支持exported 属性的组件** 
+使用帮助命令
+```shell
+python3 androyara.py  manifest -h
+```
+![manifest_opt](./img/manifest_opt.png)
 
-**仅支持apk检测**，不支持dex,odex
+如果想看入口信息，可以使用如下方法
+```shell
+python3 androyara.py  manifest -m samples/AndroidManifest.xml -e 
+```
+![manifest_entry](./img/manifest_entry.png)
 
-引擎是一个使用c++写的app特征提取识别工具，目前只能在`unix`的系统下运行，主要功能
-* 扫描apk并根据现有的规则特征`200+`的恶意家族识别先用的特征
-* 对于未知的app特征会给出`unknow`的标识同时给出对应的识别特征码，使用者可以自己填写这个家族的命名
+###  搜索Apk/Dex内的字符串，方法，指令，类
 
+#### 获取apk内的字符串
+#### 获取dex内的字符串
+#### 获取类，方法信息
+#### 获取指令信息
+
+### 使用yara
+
+## 最后
