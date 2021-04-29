@@ -297,7 +297,6 @@ class ApkPaser(BaserParser):
         # arsc_buff = self.get_buff(default_meta_info['arsc'])
         self.asrc = None  # ARSCParser(arsc_buff)
 
-
         axml_buff = self.get_buff(default_meta_info['AndroidManifest_xml'])
         self.axml = AndroidManifestXmlParser(None, buff=axml_buff)
 
@@ -309,7 +308,8 @@ class ApkPaser(BaserParser):
         self._app_crc32 = crc32(self.buff)
 
         # len(self.buff)  # len(self.buff) / 1024
-        self.filesize = len(self.buff)  # int(len(self.buff) / 1024) # kb
+        # len(self.buff)  # int(len(self.buff) / 1024) # kb
+        self.filesize = "{}KB".format(int(len(self.buff) / 1024))
         #  eb5d886abb2f01efa0de268de38a1ee7 app_sha256:c924023051836aecffb9c302de440477e6a529573f1586a3312c42a17c818015 app_crc32:1318333930
         # print("--> app_md5: {} app_sha256:{} app_crc32:{} ".format(self._app_md5,self._app_sha256,self._app_crc32))
         # Read signature info
@@ -322,6 +322,7 @@ class ApkPaser(BaserParser):
         self.package = self.axml.package
         # Read
         # print("--> AndoridManifest.xml info ",self.axml)
+
     def mainifest_info(self):
         return self.axml
 
@@ -335,8 +336,11 @@ class ApkPaser(BaserParser):
     def all_class_defs(self):
         return self.dex_vm.all_class_defs()
 
-    def print_ins(self,offset):
+    def print_ins(self, offset):
         self.dex_vm.print_ins(offset)
+
+    def analysis_dex(self, clazz_name, method_name, show_ins):
+        self.dex_vm.analysis_dex(clazz_name, method_name, show_ins)
 
     def apk_base_info(self):
         apk_info = {
@@ -368,6 +372,11 @@ class ApkPaser(BaserParser):
         if self._is_signed_v2 is False:
             self.__parse_v2_v3_signature()
         return self._is_signed_v2
+
+    def get_all_dexs(self):
+        dexre = re.compile(r"classes(\d*).dex")
+        for dex in filter(lambda x: dexre.match(x), self.get_file_names()):
+            yield self.get_buff(dex)
 
     def is_signed_v3(self):
 

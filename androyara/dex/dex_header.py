@@ -292,6 +292,7 @@ class DexHeader(object):
 
             static_field_cnt = 0
             # print("--" * 10 + "StaticField" + "--" * 10)
+            # We don't need fields ignored
             while static_field_size > 0:
                 static_field_idx_ = self.read_uleb128(self.buff)
 
@@ -389,10 +390,10 @@ class DexHeader(object):
 
         # print("--> code_off :%s method_instructions_size:%s"%(hex(code_off),hex(method_instructions_size)))
         while method_instructions_size > 0:
-            # ins_code, = unpack("B", _buff.read(2)) # 原始读取的指令是两个字节，为了方便输出，每次读取一个字节
+            # ins_code, = unpack("B", _buff.read(2)) # 原始读取的指令是两个字节，
             # code_instructions.append(ins_code)
             for _ in range(2):
-                ins_code, = unpack("B", _buff.read(1))
+                ins_code, = unpack("B", _buff.read(1))  # 为了方便输出，每次读取一个字节
                 code_instructions.append(ins_code)
             method_instructions_size -= 1
 
