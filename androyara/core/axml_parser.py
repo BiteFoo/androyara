@@ -8,7 +8,8 @@
 '''
 
 # Here put the import lib
-
+import enum
+from androyara.utils.utility import echo
 from androyara.parser.base_parser import BaserParser
 from androyara.types.types import*
 
@@ -43,7 +44,8 @@ class AndroidManifestXmlParser(BaserParser):
         # self.show_xml()
 
         if self.axml['AndroidManifest.xml'].tag != 'manifest':
-            raise AxmlExcetion("parse AndroidManifest.xml error  ,need AndroidManifest.xml file ")
+            raise AxmlExcetion(
+                "parse AndroidManifest.xml error  ,need AndroidManifest.xml file ")
         self.android_version = {}
         self.package = ""
         self.permissions = []
@@ -62,6 +64,46 @@ class AndroidManifestXmlParser(BaserParser):
             "uses-permission", "name"))
         self.permissions = list(set(permisions))
 
+    def show_manifest(self, ac, rs, ss, ps, entry, both, exported, pm):
+
+        manifest = {
+            "activities": self.get_all_activities,
+            "receviers": self.get_receivers,
+            "providers": self.get_providers,
+            "services": self.get_all_services,
+            "both": self.__str__,
+
+        }
+
+        def show(key):
+            echo('%s' % (key), "--"*15, 'yellow')
+            cnt = 1
+            for a in manifest[key]():
+                echo("%d" % (cnt), a)
+                cnt += 1
+
+        if ac:
+            show("activities")
+        elif rs:
+            show("receviers")
+        elif ss:
+            show("services")
+        elif ps:
+            show("providers")
+        elif entry:
+            # show("entry")
+            echo("entryinfo", "**"*20)
+            self.entry_info()
+        elif exported:
+            self.get_export_components()
+        elif pm:
+            for p in self.permissions:
+                echo("permission", p)
+        elif both:
+            echo("all", "\n"+manifest['both']())
+
+        # elif rs:
+
     def get_all_export_components(self):
 
         export_keys = ["activity", "service", "provider", "receiver"]
@@ -71,6 +113,12 @@ class AndroidManifestXmlParser(BaserParser):
             result[k] = list(self.get_all_attribute_value(
                 k, "name", {"exported": "true"}))
         return result
+
+    def entry_info(self):
+
+        echo("pkgname", self.get_package_name())
+        echo("application", self.get_application())
+        echo("MainActivity", self.get_main_activity())
 
     def find_tags(self, tag_name, **attribute_filter):
         all_tags = [
@@ -256,8 +304,20 @@ class AndroidManifestXmlParser(BaserParser):
         Return All export components info
         """
         # return self.
-        pass
+        exported_all = ["activity", 'service', 'provider', 'receiver']
+        # activities = list(self.get_all_attribute_value(
+        #     "activity", "name", {"exported": "true"}))
+        # exported_all.append(activities)
 
+        echo("exportedComponents", "**"*20, "yellow")
+        for k in exported_all:
+            exported = list(self.get_all_attribute_value(
+                k, "name", {"exported": "true"}))
+            print("--"*15+" "+k+" "+"--"*15)
+            for i, item in enumerate(exported):
+                echo("%d" % (i), item)
+                # for i, item in enumerate(cm):
+                #         echo("%d" % (i), item)
 
     def get_app_name(self):
         """

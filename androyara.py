@@ -75,19 +75,30 @@ def apk_info(args):
             echo("info", "-> %s" % (f))
 
 
-def extract_android_manifest_info():
+def extract_android_manifest_info(args):
+
+    input_file = args.manifest
+    entry = args.entry
+    acs = args.activities
+    rs = args.receivers
+    ss = args.services
+    ps = args.providers
+    both = args.both
+    exported = args.exported
+    pm = args.permission
 
     if not os.path.isfile(input_file):
         echo("error", "need apk or AndroidManifest.xml as input file!!", 'red')
         return
     elif input_file.endswith('.xml'):
         axml = AndroidManifestXmlParser(input_file)
-        echo("info", "\n"+str(axml))
-        pass
+        axml.show_manifest(acs, rs, ss, ps, entry, both, exported, pm)
     elif input_file.endswith('apk'):
         apk_parser = ApkPaser(input_file)
         if apk_parser.ok():
-            echo("info", "\n"+str(apk_parser.mainifest_info()))
+            apk_parser.show_manifest(
+                acs, rs, ss, ps, entry, both, exported, pm)
+            # echo("info", "\n"+str(apk_parser.mainifest_info()))
     else:
         echo("error", "unknow {} filtyep ".format(input_file), 'red')
 
@@ -212,7 +223,23 @@ if __name__ == '__main__':
     manifest_parser.set_defaults(func=extract_android_manifest_info)
     manifest_parser.add_argument("-m", "--manifest", type=str, default=None,
                                  help="A binary AndroidManifest.xml or apk contain's AndroidManifest.xml")
+    manifest_parser.add_argument(
+        "-a", "--activities",  action="store_true", help="show all activities ")
+    manifest_parser.add_argument(
+        "-r", "--receivers",  action="store_true", help="show all receivers ")
+    manifest_parser.add_argument(
+        "-s", "--services",  action="store_true", help="show all services ")
+    manifest_parser.add_argument(
+        "-p", "--providers",  action="store_true", help="show all providers ")
+    manifest_parser.add_argument(
+        "-b", "--both",  action="store_true", help="show all componets ")
+    manifest_parser.add_argument(
+        "-e", "--entry",  action="store_true", help="show entry point , MainActivity pkgname Application ")
 
+    manifest_parser.add_argument(
+        "-et", "--exported",  action="store_true", help="show entry point , MainActivity pkgname Application ")
+    manifest_parser.add_argument(
+        "-pm", "--permission",  action="store_true", help="show permissions ")
     # apk base info
     apk_base = subparsers.add_parser("apkinfo",  help="Apk base  info")
     apk_base.set_defaults(func=apk_info)

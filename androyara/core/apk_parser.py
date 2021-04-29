@@ -323,10 +323,14 @@ class ApkPaser(BaserParser):
         # Read
         # print("--> AndoridManifest.xml info ",self.axml)
 
+    def show_manifest(self, acs, rs, ss, ps, entry, both, exported, pm):
+        self.axml.show_manifest(acs, rs, ss, ps, entry, both, exported, pm)
+
     def mainifest_info(self):
         return self.axml
 
     def ok(self):
+
         return self.dex_vm.ok()
 
     def all_strings(self, pattern):
