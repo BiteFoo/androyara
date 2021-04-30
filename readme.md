@@ -1,7 +1,7 @@
 # Androyara
 
-[![Androyara](https://img.shields.io/badge/androyara%20versions-1.0.0-blue)]()
-[![license apach-2.0](https://img.shields.io/badge/license%20apach2.0-blue)]()
+[![Androyara](https://img.shields.io/badge/androyara%20versions-1.0.0-blue)](https://github.com/BiteFoo/androyara)
+[![license apach-2.0](https://img.shields.io/badge/license%20apach2.0-blue)](https://github.com/BiteFoo/androyara/blob/master/LICENSE-2.0)
 
 `Androyara` 是基于`python3.7+`开发的`android apk` 分析的工具，主要用于`android`的病毒分析和特征提取，也包括一些其他的信息提取。
 
@@ -167,3 +167,7 @@ python3 androyara.py query -s ee70eda8a7f6b209c6bb4780bf2a8a96730c19a78300eb5ec3
 [androguard](https://github.com/androguard/androguard)
 
 [malwoverview](https://github.com/alexandreborges/malwoverview/tree/master/malwoverview)
+
+[yara documents](https://buildmedia.readthedocs.org/media/pdf/yara/latest/yara.pdf)
+
+[yara python](https://github.com/VirusTotal/yara-python)
