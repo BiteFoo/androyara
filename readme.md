@@ -153,6 +153,8 @@ protocol://
 ```
 
 ### VT查询
+> 需要在user/user.conf 内填写api key
+
 可以通过命令行查询`vt`结果，如下
 
 ```shell
