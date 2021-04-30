@@ -428,20 +428,20 @@ class DexHeader(object):
             if expr.search(clazz):
                 return False
         # print("--> check %s  class: %s" % (pkg, clazz))
-        return True
-        # if pkg is None or pkg == '':
-        #     return True
-        # clazz = clazz.replace("L", "").replace("/", '.').replace(";", "")
+        # return True
+        if pkg is None or pkg == '':
+            return True
+        clazz = clazz.replace("L", "").replace("/", '.').replace(";", "")
 
-        # # filter thridpart class ,like google's code etc
-        # suffix = clazz[clazz.rfind('.'):]
-        # if suffix in need_filter_classes:
-        #     return False
+        # filter thridpart class ,like google's code etc
+        suffix = clazz[clazz.rfind('.'):]
+        if suffix in need_filter_classes:
+            return False
         # #
         # target = re.compile(pkg)
         # if target.match(clazz):
         #     return True
-        # return False
+        return True
 
     def get_method_name_by_idx(self, idx):
 

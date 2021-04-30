@@ -6,8 +6,8 @@
 @License :   (C)Copyright 2020-2021,Loopher
 @Desc    :   reference https://developers.virustotal.com/v3.0/reference#key-concepts
 '''
-import json
 from androyara.vsbox.vsbox import VSandbox
+from androyara.utils.mcolor import *
 import configparser
 
 
@@ -37,35 +37,47 @@ class VT(VSandbox):
         if result is None:
             return None
 
-        # self.echo("info", json.dumps(result, indent=2))
-        # total = result['total']
-        # positives = result['positives']
-        # permalink = result['permalink']
-        # scan_data = result['scan_date']
-        # info = '\n\tscan_result: %d/%d\n\tscan_date: %s\n\tpermalink: %s\n\tsha256: %s\n\t' % (
-        #     positives, total, scan_data, permalink, result['sha256']
-        # )
-
         scan = {
             "positives": "%d/%d" % (result['positives'], result['total']),
             "virusName": "",
             "link": result['permalink'],
             "scanDate": result['scan_date'],
+            "vendor": ""
 
 
         }
         if result['positives'] > 0:
-            for _, v in result['scans'].items():
+            for vendor, v in result['scans'].items():
 
                 if v['detected']:
                     scan['virusName'] = v['result']
+                    scan['vendor'] = vendor
                     break
-        print("")
-        self.echo("", "--"*10+"{} scan result ".format(self.sbox_name())+"--"*10)
-        self.echo("positives", scan['positives'], "magenta")
-        self.echo("virusName", scan['virusName'], "red")
-        self.echo("link", scan['link'], "green")
-        self.echo("scanDate", scan['scanDate'], "yellow")
-        print("")
+        # print(reset)
+        # print(yellow+"-"*40, end='\n\n')
+        # print(green + "\t\t%s" % ("VT-Query-Result"), end='')
+        # print(red+"\t%d" % (result['positives']), end='')
+        # print(reset+"/", end='')
+        # print("%d" % (result['total']), end='\n\n')
+        # print(pink+"\tpermalink:"+"\t%s" % (result['permalink']), end='\n\n')
+
+        # # self.echo("", "--"*10+"{} scan result ".format(self.sbox_name())+"--"*10)
+        # self.echo("positives", scan['positives'], "magenta")
+        # self.echo("virusName", scan['virusName'], "red")
+        # self.echo("link", scan['link'], "green")
+        # self.echo("scanDate", scan['scanDate'], "yellow")
+        print(reset)
+        print("\t"+yellow+"-"*40, end='\n\n')
+        print(white+"\tservice:\tVirusTotal", end='\n\n')
+        print(green + "\t%s" % ("result:"), end='')
+        print(red+"\t\t%d" % (result['positives']), end='')
+        print(reset+"/", end='')
+        print("%d" % (result['total']), end='\n\n')
+        print(pink+"\tpermalink:"+"\t%s" %
+              (result['permalink']), end='\n\n')
+        print(reset)
+        print("\tvirusName:\t%s  vendor: %s" %
+              (scan['virusName'], scan['vendor']), end='\n\n')
+        print("\tscan_date:\t%s" % (result['scan_date']), end='\n\n')
 
         return scan

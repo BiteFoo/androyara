@@ -6,7 +6,7 @@
 @License :   (C)Copyright 2020-2021, Loopher
 @Desc    :   APk Information
 
-Here's all code are from androgurad.
+Here's all the code are from androgurad.
 '''
 
 # 在这里将会读取处APK内的信息，包括 classes.dex 签名信息，签名版本v1 v2 v3 AndroidManifest.xml 包括app的指纹信息

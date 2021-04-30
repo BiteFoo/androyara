@@ -24,10 +24,10 @@ class YaraMatcher(object):
 
         if os.path.isfile(self._apk):
             try:
-                match = self.match(self._apk)
+                self.match(self._apk)
                 # if match is not None:
                 #     echo("info", " %s" % (self._apk))
-            except Exception as e:
+            except:
                 pass
         elif os.path.isdir(self._apk):
             for root, _, fs in os.walk(self._apk):
@@ -41,14 +41,27 @@ class YaraMatcher(object):
                             #          (self.match[0].rule, apk))
                         except:
                             continue
+                    elif f.endswith('.dex'):
+                        clzz_dex = os.path.join(root, f)
+                        self.match(clzz_dex, dex=True)
 
-    def match(self, apk):
+    def match(self, f, dex=False):
 
-        apk_parser = ApkPaser(apk)
-        for dex in apk_parser.get_all_dexs():
-            rsult = self.yara_rule.match(data=dex)
+        if dex:
+            with open(f, 'rb') as fp:
+                result = self.yara_rule.match(data=fp.read())
+                if len(result) > 0:
+                    echo("rule", " %s  %s" %
+                         (result[0].rule, f), 'yellow')
+                return result
+
+        apk_parser = ApkPaser(f)
+        if not apk_parser.ok():
+            return None
+        for buff in apk_parser.get_all_dexs():
+            rsult = self.yara_rule.match(data=buff)
             if len(rsult) > 0:
                 echo("rule", " %s  %s" %
-                     (rsult[0].rule, apk), 'yellow')
+                     (rsult[0].rule, f), 'yellow')
                 return rsult
         return None

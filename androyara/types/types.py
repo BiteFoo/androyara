@@ -1,7 +1,7 @@
 
 
 """
-Reference from Androguard
+Refere from Androguard
 """
 from struct import unpack, pack
 import logging
