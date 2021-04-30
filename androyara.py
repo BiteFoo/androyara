@@ -17,6 +17,7 @@ from androyara.vsbox.vt import VT
 from androyara.core.apk_parser import ApkPaser
 from androyara.core.axml_parser import AndroidManifestXmlParser
 from androyara.core.yara_matcher import YaraMatcher
+from androyara.utils.mcolor import *
 
 
 pattern = None
@@ -31,11 +32,19 @@ fingerprint = None
 def query_report(args):
 
     # default for vt
-    print("fp ", args.fingerprint)
-    resource = args.fingerprint
-    if resource is None and input_file is not None and os.path.isfile(input_file):
-        with open(input_file, 'rb') as fp:
-            resource = hashlib.sha256(fp.read()).hexdigest()
+    resource = args.resource
+    bsize = 65536
+    buff = None
+    if input_file is not None and os.path.isfile(resource):
+        sha256 = hashlib.sha256()
+        while True:
+            with open(resource, 'rb') as fp:
+                buff = fp.read(bsize)
+                if buff is None:
+                    break
+                sha256.update(buff)
+
+        resource = sha256.hexdigest()
 
     if resource is None or resource == '':
         echo("error", "query_report resouroce must be empty or None", color="red")
@@ -114,18 +123,21 @@ def extract_apk_info(args):
         echo("error", "need a apk file", 'red')
         return
     if pattern is None:
-        pattern = "://"
+        echo("warning", "no string specificed", 'yellow')
+        # pattern = ''
 
     apk_parser = ApkPaser(input_file)
     if not apk_parser.ok():
         return
 
-    for s in apk_parser.all_strings([pattern]):
-        echo("string", "%s" % (s), 'yellow')
+    if pattern is not None:
+        for s in apk_parser.all_strings([pattern]):
+            echo("string", "%s" % (s), 'yellow')
     if method_name_arg is None:
         #
         echo("warning", "no method name ", 'yellow')
-        method_name_arg = ""
+        # method_name_arg = ""
+        return
 
     apk_parser.analysis_dex(clazz_name, method_name_arg, dump)
 
@@ -183,23 +195,28 @@ def yara_scan(args):
     YaraMatcher(rule, f).yara_scan()
 
 
-def show_info():
-    echo("author", " loopher ")
-    echo("version", " 1.0 ")
+def show_info(args):
+
+    print(white+'-'*40, end='\n')
+    print(light_blue)
+    print("\t%s" % ("author:")+"\t\t%s" % ("loopher"), end='\n')
+    print("\t%s" % ("version:")+"\t%s" % ("1.0.0"), end='\n')
+    print("\t%s" % ("updatedate:\t%s" % ("2021-04-30")))
+    print(reset)
 
 
 if __name__ == '__main__':
 
-    show_info()
-
     parser = argparse.ArgumentParser(usage="%(prog)s [options]")
     subparsers = parser.add_subparsers(title="options")
 
+    version = subparsers.add_parser("version", help='show version')
+    version.set_defaults(func=show_info)
     # query vt
     query_parser = subparsers.add_parser("query", help="query from VT")
     query_parser.set_defaults(func=query_report)
     query_parser.add_argument(
-        "-fp", "--fingerprint", type=str, default=None, help="-fp|--fingerprint sh256.")
+        "-s", "--resource", type=str, default=None, help="file path or  sh256 ")
 
     analysis_dex = subparsers.add_parser(
         "search_dex", help="search dex string or method all instructions from dex")
@@ -275,7 +292,7 @@ if __name__ == '__main__':
     yara_parser.add_argument("-r", '--rule', default=None,
                              type=str, help="Yara rule file")
     yara_parser.add_argument("-f", '--file', default=None,
-                             type=str, help="apk file or directory contains apk")
+                             type=str, help="apk file or directory contains .apk/.APK or .dex")
 
     #
     args = parser.parse_args()
