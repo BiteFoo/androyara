@@ -18,7 +18,7 @@ class ThreatbookSandbox(VSandbox):
             self.echo("warning", " {} sanbox api_key is None or empty".format(
                 self.sbox_name()), "yellow")
             return "", None
-        params = {"apikey": threatbook_api_key, "md5": resource}
+        params = {"apikey": threatbook_api_key, "sha256": resource}
         url = "https://api.threatbook.cn/v3/file/report/multiengines"
         return url, params
 
