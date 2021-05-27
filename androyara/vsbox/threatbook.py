@@ -7,6 +7,7 @@
 @Desc    :   query threatbook report .
 '''
 from androyara.vsbox.vsbox import VSandbox
+from androyara.utils.mcolor import *
 
 
 class ThreatbookSandbox(VSandbox):
@@ -30,8 +31,36 @@ class ThreatbookSandbox(VSandbox):
         result = self.get_result()
         if result is None:
             return
-        self.echo("Info: sandbox : {}".format(self.sbox_name()), result)
+        if result['response_code'] != 0:
+            self.echo("error", result['verbose_msg'])
+            return
+
+        data = result['data']['multiengines']
+        scans = result['data']['multiengines']['scans']  # get anti-vendor name
+
+        print(reset)
+        print("\t"+yellow+"--"*40, end='\n\n')
+        print(white+"\tservice:\tThreatbook", end='\n')
+        print(green + "\t%s" % ("result:"), end='')
+        print(red+"\t\t%d" % (data['positives']), end='')
+        print(reset+"/", end='')
+        print("%d" % (data['total2']), end='\n')
+        print(pink+"\tmalware_type:"+" %s" %
+              (data['malware_type']), end='\n')
+        print(reset, end="")
+        print(yellow+"\tmalware_family: %s" %
+              (data['malware_family']), end='\n')
+        print(reset, end="")
+        print("\tAntiProductEngine:\t%s " %
+              ("Tencent"), end='\n')
+        print("\tvirusName: ", end="")
+        print(red+"%s" % (scans['Tencent']), end="\n")
+        print(reset, end="")
+        print("\tscan_date: %s" % (data['scan_date']))
+        print("\tsha256: ", end="")
+        print(yellow+"%s" % (self.resource), end="\n")
+        print(reset)
 
     def sbox_name(self):
 
-        return "threatbook"
+        return "Threatbook"

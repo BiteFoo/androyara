@@ -47,6 +47,8 @@ class VSandbox(object):
             return None
         config = configparser.ConfigParser()
         config.read(config_path)
+
+        self.resource = finger_print
         url, params = self.get_sbox_info(
             config, finger_print)  # Get sanbox url,api_key,sanbox_name
         if url != '':

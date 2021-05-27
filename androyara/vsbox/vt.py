@@ -53,19 +53,7 @@ class VT(VSandbox):
                     scan['virusName'] = v['result']
                     scan['vendor'] = vendor
                     break
-        # print(reset)
-        # print(yellow+"-"*40, end='\n\n')
-        # print(green + "\t\t%s" % ("VT-Query-Result"), end='')
-        # print(red+"\t%d" % (result['positives']), end='')
-        # print(reset+"/", end='')
-        # print("%d" % (result['total']), end='\n\n')
-        # print(pink+"\tpermalink:"+"\t%s" % (result['permalink']), end='\n\n')
 
-        # # self.echo("", "--"*10+"{} scan result ".format(self.sbox_name())+"--"*10)
-        # self.echo("positives", scan['positives'], "magenta")
-        # self.echo("virusName", scan['virusName'], "red")
-        # self.echo("link", scan['link'], "green")
-        # self.echo("scanDate", scan['scanDate'], "yellow")
         print(reset)
         print("\t"+yellow+"-"*40, end='\n\n')
         print(white+"\tservice:\tVirusTotal", end='\n\n')
