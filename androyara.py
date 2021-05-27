@@ -6,6 +6,7 @@
 @License :   (C)Copyright 2020-2021,Loopher
 @Desc    :   androyara main entry
 '''
+from androyara.vsbox.threatbook import ThreatbookSandbox
 import hashlib
 import os
 import argparse
@@ -33,6 +34,7 @@ def query_report(args):
 
     # default for vt
     resource = args.resource
+    name = args.name  # vendor's name : VT threatbook
     bsize = 65536
     buff = None
     if input_file is not None and os.path.isfile(resource):
@@ -48,6 +50,9 @@ def query_report(args):
 
     if resource is None or resource == '':
         echo("error", "query_report resouroce must be empty or None", color="red")
+        return
+    if name is not None and name == 'threatbook':
+        ThreatbookSandbox(resource).analysis()
         return
     vt = VT(resource)
     vt.analysis()
@@ -200,7 +205,7 @@ def show_info(args):
     print(white+'-'*40, end='\n')
     print(light_blue)
     print("\t%s" % ("author:")+"\t\t%s" % ("loopher"), end='\n')
-    print("\t%s" % ("version:")+"\t%s" % ("1.0.0"), end='\n')
+    print("\t%s" % ("version:")+"\t%s" % ("1.0.1"), end='\n')
     print("\t%s" % ("updatedate:\t%s" % ("2021-04-30")))
     print(reset)
 
@@ -217,6 +222,8 @@ if __name__ == '__main__':
     query_parser.set_defaults(func=query_report)
     query_parser.add_argument(
         "-s", "--resource", type=str, default=None, help="file path or  sh256 ")
+    query_parser.add_argument(
+        "-n", "--name", type=str, default=None, help="virus query service vendor: VT threatbook")
 
     analysis_dex = subparsers.add_parser(
         "search_dex", help="search dex string or method all instructions from dex")
