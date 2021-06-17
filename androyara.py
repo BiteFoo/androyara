@@ -6,12 +6,14 @@
 @License :   (C)Copyright 2020-2021,Loopher
 @Desc    :   androyara main entry
 '''
-from androyara.vsbox.threatbook import ThreatbookSandbox
 import hashlib
 import os
 import argparse
+from re import A
 import sys
 import json
+import time 
+from androyara.vsbox.threatbook import ThreatbookSandbox
 from androyara.dex.dex_vm import DexFileVM
 from androyara.utils.utility import echo
 from androyara.vsbox.vt import VT
@@ -31,6 +33,9 @@ fingerprint = None
 
 
 def query_report(args):
+    """
+    all file type 
+    """
 
     # default for vt
     resource = args.resource
@@ -65,24 +70,32 @@ def apk_info(args):
     AndroidManifest.xml内的信息
     使用-z --zipinfo 读取apk内的所有文件名信息
     """
-    # get_apk_info
+
     input_file = args.apk
     zip_info = args.zipinfo
     info = args.info
-    print(input_file, zip_info, info)
+
 
     if input_file is None or not os.path.isfile(input_file):
-        echo("error", "need apk.", "red")
+        echo("error", "need a apk file as input.", "red")
         sys.exit(1)
     if not input_file.endswith('.apk') and not input_file.endswith('.APK'):
         echo("error", "need a apk file", 'red')
         return
 
+    # start = time.time()
     apk_parser = ApkPaser(input_file)
     if info:
+        base_info= apk_parser.apk_base_info()
+        print("")
+        echo("AppName",base_info['app_name'])
+        if base_info['packer_name'] !="N/A":
+            echo("packer","App may be packed by {}".format(base_info['packer_name']),color="red")
+        print("")
         echo("apkInfo", "\n{}".format(
-            json.dumps(apk_parser.apk_base_info(), indent=2)), "yellow")
+            json.dumps(base_info, indent=2)), "yellow")
         print("--"*20)
+        # print("costs: {}".format(time.time() -start))
 
     if zip_info:
         for f in apk_parser.get_file_names():
@@ -205,7 +218,7 @@ def show_info(args):
     print(white+'-'*40, end='\n')
     print(light_blue)
     print("\t%s" % ("author:")+"\t\t%s" % ("loopher"), end='\n')
-    print("\t%s" % ("version:")+"\t%s" % ("1.0.1"), end='\n')
+    print("\t%s" % ("version:")+"\t%s" % ("1.0.2"), end='\n')
     print("\t%s" % ("updatedate:\t%s" % ("2021-04-30")))
     print(reset)
 
