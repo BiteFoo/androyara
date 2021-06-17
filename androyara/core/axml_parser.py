@@ -263,14 +263,26 @@ class AndroidManifestXmlParser(BaserParser):
                     if val == "android.intent.category.LAUNCHER":
                         y.add(item.get(self._ns("name")))
 
+        # print("--> x: {}  y: {}".format(len(x),len(y)))
         activities = y.intersection(x)
+        # print("--> Got Main tag activities: {}".format(len(activities)))
 
-        if len(activities) > 0:
-            main_activity = self._format_value(activities.pop())
+        def format_activity(d: set):
+            main_activity = self._format_value(d.pop())
             if main_activity.startswith("."):
                 # maybe need add package to .MainActivity
                 main_activity = self.package + main_activity
+            elif self.package not in main_activity:
+                main_activity = self.package+"." + main_activity
+
             return main_activity
+
+
+
+
+        if len(activities) > 0: return format_activity(activities)
+        elif len(x) >0: return format_activity(x)
+        elif len(y)>0: return format_activity(y)
         return "Not Found MainActivity"
 
     def get_package_name(self):
