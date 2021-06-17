@@ -48,7 +48,9 @@ options:
 ```shell
 python3 androyara apkinfo -a samples/aaa.apk -i
 ```
-![apk_info_i](./img/apk_info_i.png)
+> 增加显示加固信息
+
+![packer_info](./img/packer_info.png)
 
 还可以查看`apk内的文件`，使用如下命令
 ```shell
