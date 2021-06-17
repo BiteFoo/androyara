@@ -6,12 +6,13 @@
 @License :   (C)Copyright 2020-2021, Loopher
 @Desc    :   APk Information
 
-Here's all the code are from androgurad.
+Here's  part of   code are  from androgurad.
 '''
 
 # 在这里将会读取处APK内的信息，包括 classes.dex 签名信息，签名版本v1 v2 v3 AndroidManifest.xml 包括app的指纹信息
 # Here put the import lib
 
+from androyara.core.apk_packer import ApkPackInfo
 import io
 import json
 import codecs
@@ -271,7 +272,7 @@ class ApkPaser(BaserParser):
         0x0301: "DSA with SHA2-256 digest",
     }
 
-    def __init__(self, apk, buff=None):
+    def __init__(self, apk, buff=None,info=False):
 
         super(ApkPaser, self).__init__(apk, buff)
 
@@ -300,29 +301,22 @@ class ApkPaser(BaserParser):
         axml_buff = self.get_buff(default_meta_info['AndroidManifest_xml'])
         self.axml = AndroidManifestXmlParser(None, buff=axml_buff)
 
-        self.dex_vm = DexFileVM(self.axml.package, self.get_classe_dex())
+        self.dex_vm = None
+        if info is False:
+            # Apkinfo only will ignore dexfile
+            # 
+            self.dex_vm = DexFileVM(self.axml.package, self.get_classe_dex())
         # Read APK's fingerprint
         self._app_md5 = hashlib.md5(self.buff).hexdigest()
         self._app_sha256 = hashlib.sha256(self.buff).hexdigest()
         self._app_sha1 = hashlib.sha1(self.buff).hexdigest()
         self._app_crc32 = crc32(self.buff)
 
-        # len(self.buff)  # len(self.buff) / 1024
-        # len(self.buff)  # int(len(self.buff) / 1024) # kb
-        self.filesize = "{}KB".format(int(len(self.buff) / 1024))
-        #  eb5d886abb2f01efa0de268de38a1ee7 app_sha256:c924023051836aecffb9c302de440477e6a529573f1586a3312c42a17c818015 app_crc32:1318333930
-        # print("--> app_md5: {} app_sha256:{} app_crc32:{} ".format(self._app_md5,self._app_sha256,self._app_crc32))
-        # Read signature info
-        # signatures_name  = self.get_v1_signature_names(v1=False)
-        # print("--> signtuares" ,signatures_name)
-        # print("Is V1 signed ",self.is_v1_signed())
-        # print("Is V2 signed ",self.is_signed_v2())
-        # print("Is V3 signed ",self.is_signed_v3())
+        self.filesize = "{}MB".format(float( "%.2f" %(len(self.buff) / 1024/1024)))
+     
 
         self.package = self.axml.package
-        # Read
-        # print("--> AndoridManifest.xml info ",self.axml)
-
+      
     def show_manifest(self, acs, rs, ss, ps, entry, both, exported, pm):
         self.axml.show_manifest(acs, rs, ss, ps, entry, both, exported, pm)
 
@@ -347,8 +341,12 @@ class ApkPaser(BaserParser):
         self.dex_vm.analysis_dex(clazz_name, method_name, show_ins)
 
     def apk_base_info(self):
+        
+        application = self.axml.get_application()
+        packinfo = ApkPackInfo(self.get_file_names())
         apk_info = {
-            "appName": self.get_app_name(),
+            "app_name": self.get_app_name(),
+            "packer_name":packinfo.get_pack_info(application),
             "signed": {
                 "v1": self.is_signed_v1(),
                 "v2": self.is_signed_v2(),
@@ -358,7 +356,7 @@ class ApkPaser(BaserParser):
             "package": self.package,
             "versionCode": self.axml.android_version['Code'],
             "versionName": self.axml.android_version['Name'],
-            "Application": self.axml.get_application(),
+            "Application": application,
             "sha256": self._app_sha256,
             "md5": self._app_md5,
             "sha1": self._app_sha1,
@@ -367,6 +365,7 @@ class ApkPaser(BaserParser):
             "filetype": self.get_type(),
             "filesize": self.filesize,
             "mainActivity": self.axml.get_main_activity()
+            
             # "manifest":str(self.axml)
         }
         return apk_info
@@ -598,10 +597,11 @@ class ApkPaser(BaserParser):
 
         certification = {}
 
-        pkeys = set(self.get_public_keys_der_v3() +
-                    self.get_public_keys_der_v2())
-        if len(certs) > 0:
-            print("Found {} unique certificates".format(len(certs)))
+        # pkeys = set(self.get_public_keys_der_v3() +
+        #             self.get_public_keys_der_v2())
+        # # if len(certs) > 0:
+        #     # print("Found {} unique certificates".format(len(certs)))
+        #     pass
 
         info += "--" * 10 + "Ceritification Info:" + "--" * 10+"\n"
         for cert in certs:
