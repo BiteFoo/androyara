@@ -6,13 +6,13 @@
 @License :   (C)Copyright 2020-2021,Loopher
 @Desc    :   androyara main entry
 '''
+
 import hashlib
 import os
 import argparse
-from re import A
 import sys
 import json
-import time 
+import time
 from androyara.vsbox.threatbook import ThreatbookSandbox
 from androyara.dex.dex_vm import DexFileVM
 from androyara.utils.utility import echo
@@ -30,6 +30,18 @@ input_file = None
 method_name_arg = None
 pkg = None
 fingerprint = None
+
+
+def save_file(save, info):
+
+    with open(save, 'a+') as fp:
+        try:
+            if isinstance(info, bytes):
+                info = str(info, encoding="utf-8")
+            fp.write(info)
+            fp.write("\n")
+        except Exception as e:
+            pass
 
 
 def query_report(args):
@@ -73,29 +85,44 @@ def apk_info(args):
 
     input_file = args.apk
     zip_info = args.zipinfo
+    dex_num = args.dexnum
     info = args.info
-
+    suffix = args.suffix  # like .apk,.APK,.bin
+    if suffix is None:
+        suffix = ".apk,.APK"
 
     if input_file is None or not os.path.isfile(input_file):
         echo("error", "need a apk file as input.", "red")
         sys.exit(1)
-    if not input_file.endswith('.apk') and not input_file.endswith('.APK'):
+    found = False
+    for s in suffix.split(","):
+        if input_file.endswith(s):
+            #echo("error", "need a apk file", 'red')
+            # return
+            found = True
+    if found is False:
         echo("error", "need a apk file", 'red')
         return
 
-    # start = time.time()
+    start = time.time()
     apk_parser = ApkPaser(input_file)
+    if dex_num:
+        for dexname in apk_parser.get_all_dexs(name=True):
+            echo("dexname", dexname)
+        print("costs: {}".format(time.time() - start))
+
     if info:
-        base_info= apk_parser.apk_base_info()
+        base_info = apk_parser.apk_base_info()
         print("")
-        echo("AppName",base_info['app_name'])
-        if base_info['packer_name'] !="N/A":
-            echo("packer","App may be packed by {}".format(base_info['packer_name']),color="red")
+        echo("AppName", base_info['app_name'])
+        if base_info['packer_name'] != "N/A":
+            echo("packer", "App may be packed by {}".format(
+                base_info['packer_name']), color="red")
         print("")
         echo("apkInfo", "\n{}".format(
             json.dumps(base_info, indent=2)), "yellow")
         print("--"*20)
-        # print("costs: {}".format(time.time() -start))
+        print("costs: {}".format(time.time() - start))
 
     if zip_info:
         for f in apk_parser.get_file_names():
@@ -120,7 +147,8 @@ def extract_android_manifest_info(args):
     elif input_file.endswith('.xml'):
         axml = AndroidManifestXmlParser(input_file)
         axml.show_manifest(acs, rs, ss, ps, entry, both, exported, pm)
-    elif input_file.endswith('apk'):
+    elif input_file.endswith('apk') or input_file.endswith('bin'):
+        # for some reason,we can alse  check sample.bin
         apk_parser = ApkPaser(input_file)
         if apk_parser.ok():
             apk_parser.show_manifest(
@@ -136,9 +164,12 @@ def extract_apk_info(args):
     method_name_arg = args.method
     clazz_name = args.clazz
     dump = args.print_ins
+    save = args.save  # save strings or methods
+    # if save:
+    #     echo("save", "date save at "+f)
 
     if input_file is None or not os.path.isfile(input_file):
-        echo("error", "need a apk file", 'red')
+        echo("error", "need a apk file : %s" % (input_file), 'red')
         return
     if pattern is None:
         echo("warning", "no string specificed", 'yellow')
@@ -148,16 +179,34 @@ def extract_apk_info(args):
     if not apk_parser.ok():
         return
 
-    if pattern is not None:
-        for s in apk_parser.all_strings([pattern]):
-            echo("string", "%s" % (s), 'yellow')
-    if method_name_arg is None:
-        #
-        echo("warning", "no method name ", 'yellow')
-        # method_name_arg = ""
-        return
+    files = []
+    for dexname, dex_vm in apk_parser.all_dex_vms():
+        echo("dexname", "--> %s" % (dexname))
+        f = os.getcwd()+os.sep+"%s.txt" % (dexname)
+        files.append(f)
+        if os.path.isfile(f):
+            os.remove(f)
 
-    apk_parser.analysis_dex(clazz_name, method_name_arg, dump)
+        if pattern is not None:
+            # default all dex data
+            for s in apk_parser.all_strings([pattern], dex_vm=dex_vm):
+
+                if save:
+                    save_file(f, s)
+                else:
+                    try:
+                        echo("string", "%s" % (s), 'yellow')
+                    except UnicodeDecodeError as e:
+                        print("--> Unicode error ,string type {}".format(type(s)))
+                        raise e
+
+        if method_name_arg is not None:
+
+            apk_parser.analysis_dex(
+                clazz_name, method_name_arg, dump, dex_vm=dex_vm)
+    if save:
+        for f in files:
+            echo("save", "data save at "+f)
 
 
 def dex_info(args):
@@ -203,13 +252,15 @@ def yara_scan(args):
     if rule is None or f is None:
         echo("error", "yara rule or apk file must be include", 'red')
         return
-    if not os.path.isfile(rule):
+    if not os.path.isfile(rule) and not os.path.isdir(rule):
         echo("error", "yara rule file not exists", 'red')
         return
     if not os.path.isfile(f) and not os.path.isdir(f):
         echo("error", "apk file or apk directory need", 'red')
         return
     echo("yara_scan", "------YARA SCAN -------", 'yellow')
+    if rule.startswith("."):
+        rule = os.getcwd()+rule[1:]
     YaraMatcher(rule, f).yara_scan()
 
 
@@ -288,6 +339,15 @@ if __name__ == '__main__':
     apk_base.add_argument(
         "-z", "--zipinfo", action="store_true", help="read filename from apk,like zipinfo apk")
 
+    # dex_num显示classes.dex数量
+    apk_base.add_argument(
+        "-dexnum", "--dexnum", action="store_true", help="show all classes.dex ")
+
+    # suffix
+    apk_base.add_argument(
+        "-suffix", "--suffix", type=str,
+        default=None, help="file.suffix,like .apk,.APK,.bin")
+
     # search infor  from apk
     search_from_apk = subparsers.add_parser(
         "search_apk", help="search string or method instructions from apk")
@@ -304,13 +364,15 @@ if __name__ == '__main__':
         "-c", "--clazz", type=str, default=None, help="specific class name ,default is None ")
     search_from_apk.add_argument(
         "-p", "--print_ins",  action="store_true", help="dump method instruction ")
+    search_from_apk.add_argument(
+        "-save", "--save", action="store_true", help="save strings in to file  ")
 
     # 使用yara扫描
     yara_parser = subparsers.add_parser(
         "yara_scan", help="Using yara rule to scan")
     yara_parser.set_defaults(func=yara_scan)
     yara_parser.add_argument("-r", '--rule', default=None,
-                             type=str, help="Yara rule file")
+                             type=str, help="Yara rule file or directory")
     yara_parser.add_argument("-f", '--file', default=None,
                              type=str, help="apk file or directory contains .apk/.APK or .dex")
 
