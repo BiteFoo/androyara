@@ -87,6 +87,9 @@ python3 androyara.py  manifest -m samples/AndroidManifest.xml -e
 可以通过命令查看`apk` 或者`dex`内的方法和指令，程序内过滤了些`google`的类。
 
 #### 获取apk内的字符串
+> 使用正则表达式来做搜索，也可以指定某个字符串搜索
+
+
 基本使用方式可以查看帮助命令
 ![search_apk_cmd](./img/search_apk_cmd.png)
 
@@ -100,8 +103,12 @@ protocol://
 如下
 ![search_apk_str](./img/search_apk_str.png)
 或者可以全部输出字符串
-![all_str_cmd](./img/all_str_cmd.png)
+![all_str_cmd](./img/all_str_fix.png)
 ![all_str](./img/all_str.png)
+
+或者查找是否存在特定的字符串
+
+![search_string](./img/search_string.png)
 
 #### 获取dex内的字符串
 使用方式同`apk`类似，只需要指定`.dex`即可。
