@@ -78,9 +78,9 @@ class DexFileVM(BuffHandle):
                 if clazz_name != marker and method_name != '' and query == _x:
                     # show class.method(signature)
                     print("**"*20)
-                    echo("className", " %s" % (clzz_name), "blue")
-                    echo("methodName", " %s" % (_method_name), "blue")
-                    echo("signature", " %s" % (signature), "blue")
+                    echo("className", " %s" % (clzz_name), "yellow")
+                    echo("methodName", " %s" % (_method_name), "yellow")
+                    echo("signature", " %s" % (signature), "yellow")
                     self.print_ins(method_['code_off'], show=show_ins)
 
                 elif method_name == '':
