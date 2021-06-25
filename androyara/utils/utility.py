@@ -13,7 +13,11 @@ from termcolor import colored
 
 def echo(tag, msg, color="green"):
     # show info
-    print(colored("[{}]: {}".format(tag, msg), color=color))
+    try:
+        print(colored("[{}]: {}".format(tag, msg), color=color))
+    except UnicodeDecodeError as e:
+        print("--> type : {}".format(type(msg)))
+        raise e
 
 
 def byte2str(s):

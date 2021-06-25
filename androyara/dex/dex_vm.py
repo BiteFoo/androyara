@@ -7,6 +7,7 @@
 @Desc    :   DexFile VM
 '''
 
+from androguard.core.bytecodes import dvm
 import re
 from androyara.utils.buffer import BuffHandle
 from androyara.dex.dex_header import DexHeader
@@ -136,6 +137,7 @@ class DexFileVM(BuffHandle):
         """
         return all dex strings
         """
+
         # echo("warning", "pattern list : %s" % (pattern_list), 'yellow')
         strings = []
         reobjs_exprs = []
@@ -150,7 +152,10 @@ class DexFileVM(BuffHandle):
                 reobjs_exprs.append(re.compile(pattern))
                 # echo("info", "pattern: %s" % (pattern), 'yellow')
 
-        for _, v in self.dex_header.string_table_map.items():
+        # 2021-06-24  fixme : Using androguard to parse strings instead myself
+        d = dvm.DalvikVMFormat(self.raw)
+        # for _, v in self.dex_header.string_table_map.items():
+        for v in d.get_strings():
             try:
                 if isinstance(v, bytes):
                     v = str(v, encoding="utf-8")

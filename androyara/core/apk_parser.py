@@ -272,7 +272,7 @@ class ApkPaser(BaserParser):
         0x0301: "DSA with SHA2-256 digest",
     }
 
-    def __init__(self, apk, buff=None,info=False):
+    def __init__(self, apk, buff=None, info=False):
 
         super(ApkPaser, self).__init__(apk, buff)
 
@@ -304,7 +304,7 @@ class ApkPaser(BaserParser):
         self.dex_vm = None
         if info is False:
             # Apkinfo only will ignore dexfile
-            # 
+            #
             self.dex_vm = DexFileVM(self.axml.package, self.get_classe_dex())
         # Read APK's fingerprint
         self._app_md5 = hashlib.md5(self.buff).hexdigest()
@@ -312,11 +312,11 @@ class ApkPaser(BaserParser):
         self._app_sha1 = hashlib.sha1(self.buff).hexdigest()
         self._app_crc32 = crc32(self.buff)
 
-        self.filesize = "{}MB".format(float( "%.2f" %(len(self.buff) / 1024/1024)))
-     
+        self.filesize = "{}MB".format(
+            float("%.2f" % (len(self.buff) / 1024/1024)))
 
         self.package = self.axml.package
-      
+
     def show_manifest(self, acs, rs, ss, ps, entry, both, exported, pm):
         self.axml.show_manifest(acs, rs, ss, ps, entry, both, exported, pm)
 
@@ -327,26 +327,34 @@ class ApkPaser(BaserParser):
 
         return self.dex_vm.ok()
 
-    def all_strings(self, pattern):
-
+    def all_strings(self, pattern, dex_vm=None):
+        if dex_vm is not None:
+            return dex_vm.all_strings(pattern)
         return self.dex_vm.all_strings(pattern)
 
-    def all_class_defs(self):
+    def all_class_defs(self, dex_vm=None):
+        if dex_vm is not None:
+            return dex_vm.all_class_defs()
         return self.dex_vm.all_class_defs()
 
-    def print_ins(self, offset):
+    def print_ins(self, offset, dex_vm=None):
+        if dex_vm is not None:
+            dex_vm.print_ins(offset)
         self.dex_vm.print_ins(offset)
 
-    def analysis_dex(self, clazz_name, method_name, show_ins):
+    def analysis_dex(self, clazz_name, method_name, show_ins, dex_vm=None):
+        if dex_vm is not None:
+            dex_vm.analysis_dex(clazz_name, method_name, show_ins)
+            return
         self.dex_vm.analysis_dex(clazz_name, method_name, show_ins)
 
     def apk_base_info(self):
-        
+
         application = self.axml.get_application()
         packinfo = ApkPackInfo(self.get_file_names())
         apk_info = {
             "app_name": self.get_app_name(),
-            "packer_name":packinfo.get_pack_info(application),
+            "packer_name": packinfo.get_pack_info(application),
             "signed": {
                 "v1": self.is_signed_v1(),
                 "v2": self.is_signed_v2(),
@@ -365,10 +373,16 @@ class ApkPaser(BaserParser):
             "filetype": self.get_type(),
             "filesize": self.filesize,
             "mainActivity": self.axml.get_main_activity()
-            
-            # "manifest":str(self.axml)
         }
         return apk_info
+
+    def all_dex_vms(self,):
+        """
+        all classes.dex parse objec
+        return dexname,dex_vm
+        """
+        for dex, buff in self.get_all_dexs():
+            yield dex, DexFileVM(self.axml.package, buff)
 
     def is_signed_v2(self):
 
@@ -376,10 +390,16 @@ class ApkPaser(BaserParser):
             self.__parse_v2_v3_signature()
         return self._is_signed_v2
 
-    def get_all_dexs(self):
+    def get_all_dexs(self, name=False):
+
         dexre = re.compile(r"classes(\d*).dex")
+        # if name:
+        #     for name in
         for dex in filter(lambda x: dexre.match(x), self.get_file_names()):
-            yield self.get_buff(dex)
+            if name:
+                yield dex
+            else:
+                yield dex, self.get_buff(dex)
 
     def is_signed_v3(self):
 
