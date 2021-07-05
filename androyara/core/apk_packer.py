@@ -18,37 +18,47 @@ AJM_PACKED = {
     "features": ["assets/ijm_lib/", " assets/ijiami"],
     "shell_application": ["com.shell.SuperApplication"],
     "status": PACKED_STATUS,
-    "name":"ijm/爱加密加固"
+    "name": "ijm/爱加密加固"
 }
 
 VENDER_NAME = {"ijm": "爱加密", "digit": "360", "pengui": "腾讯", "others": "其他"}
 
-JIAGU_360={
-    "features":["assets/libjiagu_x86.so"],
-    "shell_application":["com.stub.StubApp"],
+JIAGU_360 = {
+    "features": ["assets/libjiagu_x86.so"],
+    "shell_application": ["com.stub.StubApp"],
     "status": PACKED_STATUS,
-    "name":"360加固"
+    "name": "360加固"
 }
 
-packers= [AJM_PACKED,JIAGU_360]
+SECNEO = {
+    "features": ["libDexHelper.so", "libDexHelper-x86.so"],
+    "shell_application": ["com.secneo.apkwrapper.AW"],
+    "status": PACKED_STATUS,
+    "name": "secneo/梆梆加固"
+}
+
+packers = [AJM_PACKED, JIAGU_360, SECNEO]
+
 
 class ApkPackInfo(object):
 
-    def __init__(self,namelist):
+    def __init__(self, namelist):
         self.zipinfo = namelist
 
-    def get_pack_info(self,application):
+    def get_pack_info(self, application):
         """
         Get apk packer info 
         """
-
+        # 校验application
+        for p in packers:
+            for ap in p['shell_application']:
+                if ap == application:
+                    return p['name']
+        # 校验lib目录下的或者assets目录下的
         for n in self.zipinfo:
             for p in packers:
 
-                if p['shell_application'] == application:
-                    return p['name']
-                # if p['']
-                for _p  in p['features']:
+                for _p in p['features']:
                     if _p in n:
                         return p['name']
         return "N/A"

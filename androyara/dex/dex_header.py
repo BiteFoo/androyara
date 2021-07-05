@@ -11,11 +11,12 @@ import io
 import hashlib
 import binascii
 import sys
+import re
 from struct import unpack, calcsize
 
 
+from androyara.utils.utility import echo
 from androyara.dex.dex_method import *
-import re
 
 
 class DexHeaderError(BaseException):
@@ -419,7 +420,13 @@ class DexHeader(object):
         ]
 
         if isinstance(clazz, bytes):
-            clazz = str(clazz, encoding="utf-8")
+            # print(clazz)
+            try:
+                clazz = str(clazz, encoding="utf-8")
+            except UnicodeDecodeError as e:
+                echo("dexparse", "faile to decode string : {} ,error {} ".format(
+                    clazz, e), color="red")
+                return False
         if clazz == '':
             return False
 
