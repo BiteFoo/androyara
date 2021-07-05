@@ -71,8 +71,12 @@ def query_report(args):
     if name is not None and name == 'threatbook':
         ThreatbookSandbox(resource).analysis()
         return
-    vt = VT(resource)
-    vt.analysis()
+    # query all online
+    online_sandboxies = [ThreatbookSandbox(resource), VT(resource)]
+    for sb in online_sandboxies:
+        sb.analysis()
+    # vt = VT(resource)
+    # vt.analysis()
 
 
 def apk_info(args):
@@ -182,10 +186,11 @@ def extract_apk_info(args):
     files = []
     for dexname, dex_vm in apk_parser.all_dex_vms():
         echo("dexname", "--> %s" % (dexname))
-        f = os.getcwd()+os.sep+"%s.txt" % (dexname)
-        files.append(f)
-        if os.path.isfile(f):
-            os.remove(f)
+        if save:
+            f = os.getcwd()+os.sep+"%s.txt" % (dexname)
+            files.append(f)
+            if os.path.isfile(f):
+                os.remove(f)
 
         if pattern is not None:
             # default all dex data
@@ -218,32 +223,45 @@ def dex_info(args):
     clazz_name = args.clazz
     dump = args.print_ins
 
-    if input_file is None or not os.path.isfile(input_file):
+    if input_file is None:
         echo("error", "need a dex file!! ", "red")
         parser.print_help()
         sys.exit(1)
 
     patters = []
-    if pkg is None:
-        echo("warning", "pkg is None and will retrive all methods in dex file.", 'yellow')
+    # if pkg is None:
+    #     echo("warning", "pkg is None and will retrive all methods in dex file.", 'yellow')
     # if pattern is None or pattern == '':
     #     pattern = "://"
 
     patters.append(pattern)
-    with open(input_file, 'rb') as f:
 
-        vm = DexFileVM(pkgname=pkg, buff=f.read())
-        if not vm.ok():
-            echo("error", "{} is not a dex format file.".format(input_file), 'red')
-            return
-        if pattern is not None:
-            # if pattern is not None will show string
-            for i, s in enumerate(vm.all_strings(patters)):
-                echo("%d" % (i), "%s" % (s))
-        if method_name_arg is None:
-            echo("warning", " methodName is empty ,show all methods", 'yellow')
+    def scan_dex(dex):
+        echo("dex", "analyzer "+dex)
+        with open(dex, 'rb') as f:
 
-        vm.analysis_dex(clazz_name, method_name_arg, dump)
+            vm = DexFileVM(pkgname=pkg, buff=f.read())
+            if not vm.ok():
+                echo("error", "{} is not a dex format file.".format(
+                    input_file), 'red')
+                return
+            if pattern is not None:
+                # if pattern is not None will show string
+                for i, s in enumerate(vm.all_strings(patters)):
+                    echo("%d" % (i), "%s" % (s))
+            if method_name_arg is not None:
+                echo("warning", " methodName is empty ,show all methods", 'yellow')
+
+                vm.analysis_dex(clazz_name, method_name_arg, dump)
+
+    if os.path.isdir(input_file):
+        for root, _, fs in os.walk(input_file):
+            for f in fs:
+                if f.endswith('.dex'):
+                    dex = os.path.join(root, f)
+                    scan_dex(dex)
+    elif os.path.isfile(input_file):
+        scan_dex(input_file)
 
 
 def yara_scan(args):
@@ -287,13 +305,13 @@ if __name__ == '__main__':
     query_parser.add_argument(
         "-s", "--resource", type=str, default=None, help="file path or  sh256 ")
     query_parser.add_argument(
-        "-n", "--name", type=str, default=None, help="virus query service vendor: VT threatbook")
+        "-n", "--name", type=str, default=None, help="virus query services vendor: VT threatbook")
 
     analysis_dex = subparsers.add_parser(
         "search_dex", help="search dex string or method all instructions from dex")
     analysis_dex.set_defaults(func=dex_info)
     analysis_dex.add_argument("-d", "--dex", type=str,
-                              default=None, help="A dex file")
+                              default=None, help="A dex file or folder contains .dex file")
     analysis_dex.add_argument(
         "-s", "--string", type=str, default=None, help="A string eg: \"hello\" or  reg pattern,eg: \"^(aaa).+ or ^(aaa).+,^(bbb).?\"")
     analysis_dex.add_argument("-m", "--method", type=str,
