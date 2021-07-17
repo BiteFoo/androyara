@@ -22,10 +22,11 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
-    - name: Install dependencies
+        python-version: '3.8'
+    - name: Install dependencies 
       run: |
         python -m pip install --upgrade pip
+        git clone https://github.com/BiteFoo/androyara.git -b master
         python -m pip install -r requirements.txt
     - name: Build package
       run: python setup.py
