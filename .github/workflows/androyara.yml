@@ -46,8 +46,8 @@ jobs:
       with:
           tag_name: ${{ steps.get_version.outputs.VERSION }}
           files: |
-         "androyara-release-${{ steps.get_version.outputs.VERSION }}"
-         "androyara-release-${{ steps.get_version.outputs.VERSION }}.tar.gz"
+                androyara-release-${{ steps.get_version.outputs.VERSION }}
+                androyara-release-${{ steps.get_version.outputs.VERSION }}.tar.gz
            
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
