@@ -30,5 +30,5 @@ jobs:
     - name: Build package
       run: |
         python -m pip install -r requirements.txt
-        python setup.py
+        python setup.py sdist bdist_wheel
    
