@@ -29,7 +29,6 @@ jobs:
         
     - name: Build package
       run: |
-        git clone https://github.com/BiteFoo/androyara.git -b master
         python -m pip install -r requirements.txt
         python setup.py
    
