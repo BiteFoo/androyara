@@ -41,8 +41,8 @@ jobs:
       shell: bash
       run: |
         echo "BuildVerson:  ${{ steps.get_version.outputs.VERSION }}"
-        mv "dist/androyara*.whl" "androyara-release-${{ steps.get_version.outputs.VERSION }}-py3-none-any.whl"
-        mv "dist/androyara*.gz" "androyara-release-${{ steps.get_version.outputs.VERSION }}.tar.gz"
+        mv "dist/androyara-${{ steps.get_version.outputs.VERSION }}-py3-none-any.whl" "androyara-release-${{ steps.get_version.outputs.VERSION }}-py3-none-any.whl"
+        mv "dist/androyara-${{ steps.get_version.outputs.VERSION }}.tar.gz" "androyara-release-${{ steps.get_version.outputs.VERSION }}.tar.gz"
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
