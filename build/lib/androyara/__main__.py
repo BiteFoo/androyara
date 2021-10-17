@@ -13,14 +13,27 @@ import argparse
 import sys
 import json
 import time
-from androyara.vsbox.threatbook import ThreatbookSandbox
-from androyara.dex.dex_vm import DexFileVM
+from concurrent.futures import ThreadPoolExecutor,as_completed
 from androyara.utils.utility import echo
+from androyara.vsbox.threatbook import ThreatbookSandbox
 from androyara.vsbox.vt import VT
 from androyara.core.apk_parser import ApkPaser
 from androyara.core.axml_parser import AndroidManifestXmlParser
+from androyara.dex.dex_vm import DexFileVM
 from androyara.core.yara_matcher import YaraMatcher
-from androyara.utils.mcolor import *
+
+
+
+light_yellow = '\033[33m'
+light_blue = '\033[36m'
+yellow = '\033[33m'
+pink = '\033[35m'
+white = '\033[37m'
+red = '\033[31m'
+reset = '\033[37m'
+green = '\033[32m'
+
+
 
 
 pattern = None
@@ -98,15 +111,16 @@ def apk_info(args):
     if input_file is None or not os.path.isfile(input_file):
         echo("error", "need a apk file as input.", "red")
         sys.exit(1)
-    found = False
-    for s in suffix.split(","):
-        if input_file.endswith(s):
-            #echo("error", "need a apk file", 'red')
-            # return
-            found = True
-    if found is False:
-        echo("error", "need a apk file", 'red')
-        return
+    # 可以是任意文件，内部如果读取失败，则会直接异常
+    # found = False
+    # for s in suffix.split(","):
+    #     if input_file.endswith(s):
+    #         #echo("error", "need a apk file", 'red')
+    #         # return
+    #         found = True
+    # if found is False:
+    #     echo("error", "need a apk file", 'red')
+    #     return
 
     start = time.time()
     apk_parser = ApkPaser(input_file)
@@ -159,7 +173,7 @@ def extract_android_manifest_info(args):
                 acs, rs, ss, ps, entry, both, exported, pm)
             # echo("info", "\n"+str(apk_parser.mainifest_info()))
     else:
-        echo("error", "unknow {} filtyep ".format(input_file), 'red')
+        echo("error", "unknow {} filtype ".format(input_file), 'red')
 
 
 def extract_apk_info(args):
@@ -171,20 +185,10 @@ def extract_apk_info(args):
     save = args.save  # save strings or methods
     # if save:
     #     echo("save", "date save at "+f)
-
-    if input_file is None or not os.path.isfile(input_file):
-        echo("error", "need a apk file : %s" % (input_file), 'red')
-        return
-    if pattern is None:
-        echo("warning", "no string specificed", 'yellow')
-        # pattern = ''
-
-    apk_parser = ApkPaser(input_file)
-    if not apk_parser.ok():
-        return
-
+    executor = ThreadPoolExecutor(max_workers = 4)
     files = []
-    for dexname, dex_vm in apk_parser.all_dex_vms():
+
+    def show_info(parser,dexname,vm):
         echo("dexname", "--> %s" % (dexname))
         if save:
             f = os.getcwd()+os.sep+"%s.txt" % (dexname)
@@ -194,7 +198,7 @@ def extract_apk_info(args):
 
         if pattern is not None:
             # default all dex data
-            for s in apk_parser.all_strings([pattern], dex_vm=dex_vm):
+            for s in parser.all_strings([pattern], dex_vm=vm):
 
                 if save:
                     save_file(f, s)
@@ -209,9 +213,29 @@ def extract_apk_info(args):
 
             apk_parser.analysis_dex(
                 clazz_name, method_name_arg, dump, dex_vm=dex_vm)
-    if save:
-        for f in files:
-            echo("save", "data save at "+f)
+        if save:
+            for f in files:
+                echo("save", "data save at "+f)
+
+
+    if input_file is None or not os.path.isfile(input_file):
+        echo("error", "need a apk file : %s" % (input_file), 'red')
+        return
+    if pattern is None:
+        echo("warning", "no string specificed", 'yellow')
+        # pattern = ''
+
+    apk_parser = ApkPaser(input_file)
+    if not apk_parser.ok():
+        return
+
+    
+    workers = []
+    for dexname, dex_vm in apk_parser.all_dex_vms():
+        workers.append(executor.submit(fn = show_info,parser=apk_parser,dexname = dexname,vm =dex_vm))
+    #   pass
+    for t in as_completed(workers):
+        t.result()
 
 
 def dex_info(args):
@@ -287,7 +311,7 @@ def show_info(args):
     print(white+'-'*40, end='\n')
     print(light_blue)
     print("\t%s" % ("author:")+"\t\t%s" % ("loopher"), end='\n')
-    print("\t%s" % ("version:")+"\t%s" % ("1.0.2"), end='\n')
+    print("\t%s" % ("version:")+"\t%s" % ("2.0"), end='\n')
     print("\t%s" % ("updatedate:\t%s" % ("2021-04-30")))
     print(reset)
 
@@ -323,6 +347,7 @@ if __name__ == '__main__':
     analysis_dex.add_argument(
         "-p", "--print_ins",  action="store_true", help="dump method instruction ")
 
+    # 
     # analysis AndroidManifest.xml
     manifest_parser = subparsers.add_parser(
         "manifest", help=" Parsing Binary AndroidManifest.xml")
@@ -351,6 +376,7 @@ if __name__ == '__main__':
     apk_base.set_defaults(func=apk_info)
     apk_base.add_argument("-a", "--apk", type=str,
                           default=None, help="path to apk")
+    # 
     apk_base.add_argument(
         "-i", "--info", action="store_true", help="read apk base info ")
     # 获取所有的apk内的文件名
@@ -384,6 +410,7 @@ if __name__ == '__main__':
         "-p", "--print_ins",  action="store_true", help="dump method instruction ")
     search_from_apk.add_argument(
         "-save", "--save", action="store_true", help="save strings in to file  ")
+
 
     # 使用yara扫描
     yara_parser = subparsers.add_parser(
