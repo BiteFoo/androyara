@@ -16,7 +16,7 @@ with codecs.open("readme.md", "r",encoding="utf-8") as fh:
 
 setuptools.setup(
     name="androyara",
-    version="1.0.2",
+    version="2.0",
     author="BiteFoo",
     author_email="1653946112@qq.com",
     description="A tool is use to analyzer Android malware",
@@ -24,6 +24,12 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/BiteFoo/androyara",
     packages=setuptools.find_packages(),
+    #data_files=[('androyara/typeinfo/public.xml', ['androyara/typeinfo/public.xml']), ],
+    package_data={
+        # 引入任何包下面的 *.txt、*.rst 文件
+
+        "": ["*.xml"],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache-2.0",
@@ -34,7 +40,8 @@ setuptools.setup(
         'lxml >= 4.6.2',
         'requests >= 2.25.1',
         'yara >= 1.7.7',
-        'asn1crypto >=1.4.0'
+        'asn1crypto >=1.4.0',
+        "androguard>=3.3.5"
         # exapmle
     ],
     python_requires='>=3.7',
