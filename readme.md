@@ -14,7 +14,8 @@
 * Vt查询功能
 * APK加固信息 `2021-06-17 add`
 
-## install
+## install 
+get  [download](https://github.com/BiteFoo/androyara/releases)
 ```shell
 pip3 install androyara-xxx-py3-none-any.whl
 ```
