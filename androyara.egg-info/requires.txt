@@ -1,6 +1,0 @@
-termcolor>=1.1.0
-lxml>=4.6.2
-requests>=2.25.1
-yara>=1.7.7
-asn1crypto>=1.4.0
-androguard>=3.3.5
