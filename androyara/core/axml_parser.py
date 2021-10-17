@@ -11,7 +11,7 @@
 import enum
 from androyara.utils.utility import echo
 from androyara.parser.base_parser import BaserParser
-from androyara.types.types import*
+from androyara.typeinfo.types import*
 
 
 NS_ANDROID_URI = 'http://schemas.android.com/apk/res/android'

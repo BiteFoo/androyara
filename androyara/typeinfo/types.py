@@ -14,7 +14,7 @@ import re
 import sys
 import binascii
 
-from androyara.types import publics
+from androyara.typeinfo import publics
 from androyara.utils.buffer import BuffHandle
 
 

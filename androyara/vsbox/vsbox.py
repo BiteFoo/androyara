@@ -14,9 +14,9 @@ import requests
 import json
 from termcolor import colored
 
-root = os.path.abspath(os.path.dirname(__file__))
-root = root[:root.rfind(os.sep)]
-user = root[:root.rfind(os.sep)]+os.sep+"user"
+# root = os.path.abspath(os.path.dirname(__file__))
+# root = root[:root.rfind(os.sep)]
+# user = root[:root.rfind(os.sep)]+os.sep+"user"
 
 logger = logging.getLogger("androyara.vbox")
 logger.setLevel(logging.INFO)
@@ -35,7 +35,12 @@ class VSandbox(object):
 
     def _init_conf(self, finger_print: str):
 
-        config_path = user+os.sep+"user.conf"
+        if "USR_CONFIG_INI" not in os.environ:
+            raise Exception("Please USR_CONFIG_INI as env variable.")
+        user = os.getenv("USR_CONFIG_INI")
+        if not os.path.isfile(user):
+            raise FileNotFoundError("%s is not file "%(user))
+        config_path = user#user+os.sep+"user.conf"
         if not os.path.isfile(config_path):
             print(colored(
                 "[error]: Read user.conf error  {} is not file !!! ".format(config_path), "red"))

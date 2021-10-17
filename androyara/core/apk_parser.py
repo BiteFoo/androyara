@@ -12,7 +12,6 @@ Here's  part of   code are  from androgurad.
 # 在这里将会读取处APK内的信息，包括 classes.dex 签名信息，签名版本v1 v2 v3 AndroidManifest.xml 包括app的指纹信息
 # Here put the import lib
 
-from androyara.core.apk_packer import ApkPackInfo
 import io
 import json
 import codecs
@@ -28,6 +27,7 @@ from asn1crypto import cms, x509, keys
 from androyara.parser.base_parser import BaserParser
 from androyara.dex.dex_vm import DexFileVM
 from androyara.core.axml_parser import AndroidManifestXmlParser, ARSCParser, ARSCResTableConfig
+from androyara.core.apk_packer import ApkPackInfo
 
 log = logging.getLogger("androyara.apk")
 
