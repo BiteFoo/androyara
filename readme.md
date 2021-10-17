@@ -1,6 +1,6 @@
 # Androyara
 
-[![Androyara](https://img.shields.io/badge/androyara%20versions-1.0.2-blue)](https://github.com/BiteFoo/androyara)
+[![Androyara](https://img.shields.io/badge/androyara%20versions-2.0-blue)](https://github.com/BiteFoo/androyara)
 [![license apach-2.0](https://img.shields.io/badge/license%20apach2.0-blue)](https://github.com/BiteFoo/androyara/blob/master/LICENSE-2.0)
 
 `Androyara` 是基于`python3.7+`开发的`android apk` 分析的工具，主要用于`android`的病毒分析和特征提取，也包括一些其他的信息提取。
@@ -14,8 +14,14 @@
 * Vt查询功能
 * APK加固信息 `2021-06-17 add`
 
+## install
 ```shell
-python3 androyara.py -h
+pip3 install androyara-xxx-py3-none-any.whl
+```
+comands 
+
+```shell
+python3 androyara  -h
 usage: androyara.py [options]
 
 optional arguments:
@@ -54,7 +60,7 @@ python3 androyara apkinfo -a samples/aaa.apk -i
 
 还可以查看`apk内的文件`，使用如下命令
 ```shell
-python3 androyara.py apkinfo -a samples/aaa.apk --zipinfo
+python3 -m androyara apkinfo -a samples/aaa.apk --zipinfo
 ```
 ![apk_info_zipinfo](./img/apk_info_zipinfo.png)
 
@@ -67,19 +73,19 @@ python3 androyara.py apkinfo -a samples/aaa.apk --zipinfo
 主要输出内容 `包名和四大组件信息`，如下
 
 ```shell
-python3 androyara.py  manifest -m samples/AndroidManifest.xml -b
+python3 androyara  manifest -m samples/AndroidManifest.xml -b
 ```
 ![manifest](./img/manifest.png)
 可以只选择查看`activity` 或者其他的组件信息，**还可以查看所有支持exported 属性的组件** 
 使用帮助命令
 ```shell
-python3 androyara.py  manifest -h
+python3 androyara   manifest -h
 ```
 ![manifest_opt](./img/manifest_opt.png)
 
 如果想看入口信息，可以使用如下方法
 ```shell
-python3 androyara.py  manifest -m samples/AndroidManifest.xml -e 
+python3 androyara   manifest -m samples/AndroidManifest.xml -e 
 ```
 ![manifest_entry](./img/manifest_entry.png)
 
@@ -160,18 +166,34 @@ protocol://
 
 还可以支持`.dex`的方式检测，目的是有些`apk`是加固的，可以通过脱壳后进行查杀，具体查看帮助命令
 ```shell
- python androyara.py yara_scan -h
+ python androyara  yara_scan -h
 ```
 
 ### VT查询
-> 需要在user/user.conf 内填写api key
+**请将USR_CONFIG_INI设置为指定到user.conf的环境变量**
+```shell
+# windows 
+set USR_CONFIG_INI=D:\\user.config
+# Unix 
+export USR_CONFIG_INI=$HOME/user.config
+```
+
+需要在user.conf 内填写api key,参考user/user.conf文件配置填写
 
 可以通过命令行查询`vt`结果，如下
 
 ```shell
-python3 androyara.py query -s ee70eda8a7f6b209c6bb4780bf2a8a96730c19a78300eb5ec3c25a48e557cb2e
+python3 androyara  query -s ee70eda8a7f6b209c6bb4780bf2a8a96730c19a78300eb5ec3c25a48e557cb2e
 ```
 ![vt_query](./img/vt_query.png)
+
+
+## build
+```shell
+pip3 install -r requirements.txt
+python3 setup.py bdist_wheel
+pip3 install dist/androyara-version-py3-none-any.whl
+```
 
 
 ## 感谢
