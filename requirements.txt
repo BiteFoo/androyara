@@ -4,3 +4,4 @@ requests==2.25.1
 yara==1.7.7
 asn1crypto==1.4.0
 androguard==3.3.5
+pillow>=10.2.0 # not directly required, pinned by Snyk to avoid a vulnerability
