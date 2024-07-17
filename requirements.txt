@@ -4,3 +4,10 @@ requests==2.25.1
 yara==1.7.7
 asn1crypto==1.4.0
 androguard==3.3.5
+certifi>=2024.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
+ipython>=7.16.3 # not directly required, pinned by Snyk to avoid a vulnerability
+networkx>=2.6 # not directly required, pinned by Snyk to avoid a vulnerability
+numpy>=1.21.0rc1 # not directly required, pinned by Snyk to avoid a vulnerability
+prompt-toolkit>=3.0.13 # not directly required, pinned by Snyk to avoid a vulnerability
+pygments>=2.15.0 # not directly required, pinned by Snyk to avoid a vulnerability
+setuptools>=70.0.0 # not directly required, pinned by Snyk to avoid a vulnerability
